@@ -1,0 +1,135 @@
+package network
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"strings"
+
+	"github.com/emibotz/chat-server/internal/user"
+	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
+	"github.com/emibotz/chat-server/pkg/response"
+	"github.com/gorilla/websocket"
+	"github.com/labstack/echo/v5"
+	"google.golang.org/protobuf/proto"
+)
+
+type Server struct {
+	userService *user.Service
+
+	wsUpgrader *websocket.Upgrader
+
+	handlers []ClientRequestHandler
+	clients  []*Client
+}
+
+func NewServer(userService *user.Service) *Server {
+	return &Server{
+		userService: userService,
+
+		wsUpgrader: &websocket.Upgrader{
+			// [FIXME] 测试环境用，生产环境修改为更严谨的跨域检测
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+
+		clients: nil,
+	}
+}
+
+func (s *Server) HandleFunc(handler ClientRequestHandler) {
+	s.handlers = append(s.handlers, handler)
+}
+
+func (s *Server) handleClient(client *Client) error {
+	for {
+		// 读取信息
+		messageType, bytes, err := client.wsConn.ReadMessage()
+		if err != nil {
+			return err
+		}
+
+		// 跳过非二进制信息
+		if messageType != websocket.BinaryMessage {
+			continue
+		}
+
+		// 解析客户端请求
+		var request pbuf.ClientRequest
+		if err := proto.Unmarshal(bytes, &request); err != nil {
+			slog.Error(
+				"unmarshal client message failed",
+				slog.String("error", err.Error()),
+			)
+
+			continue
+		}
+
+		// 创建上下文
+		ctx, done := context.WithCancel(context.TODO())
+		defer done()
+
+		c := Context{
+			Context: ctx,
+			Client:  client,
+			Request: &request,
+		}
+
+		// 分发给客户端请求处理器
+		for _, handle := range s.handlers {
+			handle(&c)
+		}
+	}
+}
+
+func (s *Server) Handle(c *echo.Context) error {
+	// 获取请求上下文
+	ctx := c.Request().Context()
+
+	// 获取认证头
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return response.Unauthorized(c)
+	}
+
+	// 解析认证头
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		return response.Unauthorized(c)
+	}
+
+	// 验证 Token 并获取用户 ID
+	token := parts[1]
+	id, err := s.userService.VerifyToken(ctx, token)
+	if err != nil {
+		if errors.Is(err, user.ErrTokenUnauthorized) {
+			return response.Unauthorized(c)
+		}
+
+		return response.InternalServerError(c, err)
+	}
+
+	// 建立 Websocket 连接
+	conn, err := s.wsUpgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		return response.InternalServerError(c, err)
+	}
+	defer conn.Close()
+
+	// 创建客户端
+	client := Client{
+		userID: id,
+		wsConn: conn,
+	}
+
+	s.clients = append(s.clients, &client)
+
+	// 处理客户端请求
+	if err := s.handleClient(&client); err != nil {
+		return response.InternalServerError(c, err)
+	}
+
+	return nil
+}

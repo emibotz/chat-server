@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/emibotz/chat-server/internal/network"
+	"github.com/emibotz/chat-server/internal/room"
 	"github.com/emibotz/chat-server/internal/store/pgsql"
 	"github.com/emibotz/chat-server/internal/store/redis"
 	"github.com/emibotz/chat-server/internal/user"
@@ -71,27 +73,21 @@ func main() {
 
 	// 创建服务
 	userService := user.NewService(sessions, users)
+	roomService := room.NewService()
 
 	// 创建请求处理器
 	userHandler := user.NewHandler(userService)
+	roomHandler := room.NewHandler(roomService)
 
-	// 读取服务器监听地址
-	serverAddr := os.Getenv("ADDR")
+	wsHandler := network.NewServer(userService)
+	{
+		wsHandler.HandleFunc(roomHandler.Handle)
+	}
 
 	// 创建请求处理器
 	e := echo.New()
 	e.Use(echoMiddleware.RequestLogger())
 	e.Use(echoMiddleware.Recover())
-
-	e.GET("/ws", handleWebSocket)
-
-	server := &http.Server{
-		Addr:         serverAddr,
-		Handler:      e,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
 
 	// 创建路由
 	apiRoute := e.Group("/api")
@@ -101,6 +97,18 @@ func main() {
 			userRoute.POST("/register", userHandler.Register)
 			userRoute.POST("/login", userHandler.Login)
 		}
+	}
+
+	// 读取服务器监听地址
+	serverAddr := os.Getenv("ADDR")
+
+	// 创建 HTTP 服务器
+	server := &http.Server{
+		Addr:         serverAddr,
+		Handler:      e,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	// 启动服务器，优雅退出

@@ -100,8 +100,8 @@ func (s *Service) Register(ctx context.Context, username string, password string
 		return "", fmt.Errorf("create user failed: %w", err)
 	}
 
-	// 生成会话，持续 1 天
-	token, err := s.sessions.Create(ctx, u.ID, 1*24*time.Hour)
+	// 生成会话，持续 1 小时
+	token, err := s.sessions.Create(ctx, u.ID, 1*time.Hour)
 	if err != nil {
 		return "", fmt.Errorf("create session failed: %w", err)
 	}
@@ -130,8 +130,8 @@ func (s *Service) Login(ctx context.Context, username string, password string) (
 		return "", err
 	}
 
-	// 创建会话，持续 3 天
-	token, err := s.sessions.Create(ctx, u.ID, 3*24*time.Hour)
+	// 创建会话，持续 1 小时
+	token, err := s.sessions.Create(ctx, u.ID, 1*time.Hour)
 	if err != nil {
 		return "", fmt.Errorf("create session failed: %w", err)
 	}
