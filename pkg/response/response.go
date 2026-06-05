@@ -1,0 +1,38 @@
+package response
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/labstack/echo/v5"
+)
+
+type HTTPResponse struct {
+	Code    int32  `json:"code" form:"code"`
+	Message string `json:"message" form:"message"`
+	Data    any    `json:"data"`
+}
+
+func HTTPSuccess(c *echo.Context, httpStatus int, code int32, message string, data any) error {
+	return c.JSON(httpStatus, HTTPResponse{
+		Code:    code,
+		Message: message,
+		Data:    data,
+	})
+}
+
+func HTTPFail(c *echo.Context, httpStatus int, code int32, err error) error {
+	return c.JSON(httpStatus, HTTPResponse{
+		Code:    code,
+		Message: err.Error(),
+		Data:    nil,
+	})
+}
+
+var (
+	ErrBadRequest = fmt.Errorf("bad request.")
+)
+
+func BadRequest(c *echo.Context) error {
+	return HTTPFail(c, http.StatusBadRequest, -1, ErrBadRequest)
+}
