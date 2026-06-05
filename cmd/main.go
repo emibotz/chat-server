@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
+	echoMiddleware "github.com/labstack/echo/v5/middleware"
 )
 
 var upgrader = websocket.Upgrader{
@@ -69,10 +69,10 @@ func main() {
 
 	users := pgsqlDB.Users()
 
-	// 创建用户服务
+	// 创建服务
 	userService := user.NewService(sessions, users)
 
-	// 创建用户请求处理器
+	// 创建请求处理器
 	userHandler := user.NewHandler(userService)
 
 	// 读取服务器监听地址
@@ -80,8 +80,8 @@ func main() {
 
 	// 创建请求处理器
 	e := echo.New()
-	e.Use(middleware.RequestLogger())
-	e.Use(middleware.Recover())
+	e.Use(echoMiddleware.RequestLogger())
+	e.Use(echoMiddleware.Recover())
 
 	e.GET("/ws", handleWebSocket)
 
@@ -94,10 +94,13 @@ func main() {
 	}
 
 	// 创建路由
-	userRoute := e.Group("/user")
+	apiRoute := e.Group("/api")
 	{
-		userRoute.POST("/register", userHandler.Register)
-		userRoute.POST("/login", userHandler.Login)
+		userRoute := apiRoute.Group("/user")
+		{
+			userRoute.POST("/register", userHandler.Register)
+			userRoute.POST("/login", userHandler.Login)
+		}
 	}
 
 	// 启动服务器，优雅退出

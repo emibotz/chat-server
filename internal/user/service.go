@@ -2,18 +2,24 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 // 错误信息
 var (
-	ErrInvalidUsername = fmt.Errorf("invalid username")
-	ErrInvalidPassword = fmt.Errorf("invalid password")
+	ErrInvalidUsername = fmt.Errorf("invalid username.")
+	ErrInvalidPassword = fmt.Errorf("invalid password.")
 
-	ErrUserExists   = fmt.Errorf("user exists")
-	ErrUserNotExist = fmt.Errorf("user does not exist")
+	ErrUserExists   = fmt.Errorf("user exists.")
+	ErrUserNotExist = fmt.Errorf("user does not exist.")
+
+	ErrTokenUnauthorized = fmt.Errorf("token unauthorized.")
 )
 
 // 正则表达式
@@ -131,4 +137,22 @@ func (s *Service) Login(ctx context.Context, username string, password string) (
 	}
 
 	return token, nil
+}
+
+func (s *Service) VerifyToken(ctx context.Context, token string) (uuid.UUID, error) {
+	// 验证是否存在指定 Token
+	id, err := s.sessions.Get(ctx, token)
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return uuid.Nil, ErrTokenUnauthorized
+		}
+
+		return uuid.Nil, fmt.Errorf("session get failed: %w", err)
+	}
+
+	if id == uuid.Nil {
+		return uuid.Nil, ErrTokenUnauthorized
+	}
+
+	return id, nil
 }

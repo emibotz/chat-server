@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"time"
 
@@ -49,6 +50,10 @@ func (s *sessions) Get(ctx context.Context, token string) (uuid.UUID, error) {
 
 	rawID, err := s.redis.Get(ctx, key).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return uuid.Nil, err
+		}
+
 		return uuid.Nil, fmt.Errorf("redis get userID by token failed: %w", err)
 	}
 

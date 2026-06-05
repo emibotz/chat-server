@@ -30,9 +30,18 @@ func HTTPFail(c *echo.Context, httpStatus int, code int32, err error) error {
 }
 
 var (
-	ErrBadRequest = fmt.Errorf("bad request.")
+	ErrUnauthorized = fmt.Errorf("unauthorized.")
+	ErrBadRequest   = fmt.Errorf("bad request.")
 )
+
+func Unauthorized(c *echo.Context) error {
+	return HTTPFail(c, http.StatusUnauthorized, -1, ErrUnauthorized)
+}
 
 func BadRequest(c *echo.Context) error {
 	return HTTPFail(c, http.StatusBadRequest, -1, ErrBadRequest)
+}
+
+func InternalServerError(c *echo.Context, err error) error {
+	return HTTPFail(c, http.StatusInternalServerError, -1, err)
 }
