@@ -44,27 +44,27 @@ func DefaultConfig() *AuthConfig {
 // 从环境变量中加载配置
 func (c *AuthConfig) Load() {
 	if e := os.Getenv("ARGON2_MEMORY"); e != "" {
-		if val, err := strconv.ParseUint(e, 10, 32); err != nil {
+		if val, err := strconv.ParseUint(e, 10, 32); err == nil {
 			c.Memory = uint32(val)
 		}
 	}
 	if e := os.Getenv("ARGON2_ITERATION"); e != "" {
-		if val, err := strconv.ParseUint(e, 10, 32); err != nil {
+		if val, err := strconv.ParseUint(e, 10, 32); err == nil {
 			c.Iterations = uint32(val)
 		}
 	}
 	if e := os.Getenv("ARGON2_PARALLELISM"); e != "" {
-		if val, err := strconv.ParseUint(e, 10, 32); err != nil {
+		if val, err := strconv.ParseUint(e, 10, 32); err == nil {
 			c.Parallelism = uint8(val)
 		}
 	}
 	if e := os.Getenv("ARGON2_SALT_LENGTH"); e != "" {
-		if val, err := strconv.ParseUint(e, 10, 32); err != nil {
+		if val, err := strconv.ParseUint(e, 10, 32); err == nil {
 			c.SaltLength = uint32(val)
 		}
 	}
 	if e := os.Getenv("ARGON2_KEY_LENGTH"); e != "" {
-		if val, err := strconv.ParseUint(e, 10, 32); err != nil {
+		if val, err := strconv.ParseUint(e, 10, 32); err == nil {
 			c.KeyLength = uint32(val)
 		}
 	}
