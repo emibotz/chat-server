@@ -77,6 +77,8 @@ func (h *handler) joinRoom(c *network.Context) error {
 		if err := c.Client.SendEvent(event); err != nil {
 			return fmt.Errorf("client send event failed: %w", err)
 		}
+
+		return nil
 	}
 
 	// 获取指定房间
