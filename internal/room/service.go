@@ -160,6 +160,9 @@ func (s *Service) deleteRoom(room *Room) {
 
 	// 从房间表中删除房间
 	delete(s.roomsByNum, room.Num)
+
+	// 把房间号标为空闲
+	s.freeRoomNumber = append(s.freeRoomNumber, room.Num)
 }
 
 func (s *Service) UserLeaveRoom(ctx context.Context, room *Room, user *user.User) error {
