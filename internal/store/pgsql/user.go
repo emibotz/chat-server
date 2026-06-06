@@ -110,7 +110,7 @@ WHERE
 }
 
 func (s *users) Update(ctx context.Context, user *user.User) error {
-	// 开启事务并自动回滚
+	// 开启事务并自动回滚，防止误更新多个记录
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("pgsql tx begin failed: %v", err)
@@ -133,7 +133,7 @@ WHERE
 	`
 
 	// 执行更新
-	cmd, err := s.pool.Exec(ctx, pgsql, user.ID, user.Name, user.Auth)
+	cmd, err := tx.Exec(ctx, pgsql, user.ID, user.Name, user.Auth)
 	if err != nil {
 		return fmt.Errorf("pgsql users update failed: %v", err)
 	}
@@ -152,7 +152,7 @@ WHERE
 }
 
 func (s *users) Delete(ctx context.Context, user *user.User) error {
-	// 开启事务并自动回滚
+	// 开启事务并自动回滚，防止误更新多个事务
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("pgsql tx begin failed: %w", err)
@@ -173,7 +173,7 @@ WHERE
 	`
 
 	// 执行删除操作
-	cmd, err := s.pool.Exec(ctx, pgsql, user.ID)
+	cmd, err := tx.Exec(ctx, pgsql, user.ID)
 	if err != nil {
 		return fmt.Errorf("pgsql user delete failed: %w", err)
 	}
