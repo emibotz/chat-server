@@ -10,6 +10,7 @@ require (
 	github.com/labstack/echo/v5 v5.1.1
 	github.com/redis/go-redis/v9 v9.20.0
 	golang.org/x/crypto v0.52.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -22,5 +23,4 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 )
