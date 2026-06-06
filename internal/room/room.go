@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// 理论上不应该有 room 包外的代码直接修改此结构体内的字段
 type Room struct {
 	mu sync.RWMutex
 

@@ -36,7 +36,7 @@ func (c *Client) send(bytes []byte) error {
 func (c *Client) SendEvent(event *pbuf.ServerEvent) error {
 	bytes, err := proto.Marshal(event)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return c.send(bytes)
@@ -60,4 +60,4 @@ func (c *Context) Value(key any) any {
 	return c.Context.Value(key)
 }
 
-type ClientRequestHandler func(c *Context) error
+type ClientRequestHandler func(c *Context) (handled bool, err error)

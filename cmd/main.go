@@ -100,6 +100,8 @@ func main() {
 		}
 	}
 
+	e.GET("/ws", wsHandler.Handle)
+
 	// 读取服务器监听地址
 	serverAddr := os.Getenv("ADDR")
 

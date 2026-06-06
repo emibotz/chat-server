@@ -5,10 +5,12 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
+	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/response"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
@@ -43,7 +45,20 @@ func (s *Server) HandleFunc(handler ClientRequestHandler) {
 	s.handlers = append(s.handlers, handler)
 }
 
+func (s *Server) disconnectClient(client *Client) error {
+	i := slices.Index(s.clients, client)
+	s.clients = slices.Delete(s.clients, i, i+1)
+
+	return client.wsConn.Close()
+}
+
 func (s *Server) handleClient(client *Client) error {
+	// 在函数退出时同步断开客户端连接
+	defer s.disconnectClient(client)
+
+	// 创建上下文
+	ctx := context.TODO()
+
 	for {
 		// 读取信息
 		messageType, bytes, err := client.wsConn.ReadMessage()
@@ -68,8 +83,7 @@ func (s *Server) handleClient(client *Client) error {
 		}
 
 		// 创建上下文
-		ctx, done := context.WithCancel(context.TODO())
-		defer done()
+		ctx, done := context.WithCancel(ctx)
 
 		c := Context{
 			Context: ctx,
@@ -79,8 +93,26 @@ func (s *Server) handleClient(client *Client) error {
 
 		// 分发给客户端请求处理器
 		for _, handle := range s.handlers {
-			handle(&c)
+			handled, err := handle(&c)
+
+			// 处理错误
+			if err != nil {
+				event := errcode.NewEvent(errcode.InternalError)
+
+				if err := client.SendEvent(event); err != nil {
+					done()
+					return err
+				}
+			}
+
+			// 如果请求已被处理，停止处理
+			if handled {
+				done()
+				break
+			}
 		}
+
+		done()
 	}
 }
 
