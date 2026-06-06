@@ -26,6 +26,7 @@ type ServerEvent struct {
 	Version *string                `protobuf:"bytes,1,opt,name=version" json:"version,omitempty"`
 	// Types that are valid to be assigned to Data:
 	//
+	//	*ServerEvent_Error
 	//	*ServerEvent_Rooms
 	//	*ServerEvent_RoomJoined
 	//	*ServerEvent_RoomLeft
@@ -78,6 +79,15 @@ func (x *ServerEvent) GetData() isServerEvent_Data {
 	return nil
 }
 
+func (x *ServerEvent) GetError() *ServerError {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_Error); ok {
+			return x.Error
+		}
+	}
+	return nil
+}
+
 func (x *ServerEvent) GetRooms() *RoomInfos {
 	if x != nil {
 		if x, ok := x.Data.(*ServerEvent_Rooms); ok {
@@ -109,17 +119,23 @@ type isServerEvent_Data interface {
 	isServerEvent_Data()
 }
 
+type ServerEvent_Error struct {
+	Error *ServerError `protobuf:"bytes,2,opt,name=error,oneof"`
+}
+
 type ServerEvent_Rooms struct {
-	Rooms *RoomInfos `protobuf:"bytes,2,opt,name=rooms,oneof"`
+	Rooms *RoomInfos `protobuf:"bytes,3,opt,name=rooms,oneof"`
 }
 
 type ServerEvent_RoomJoined struct {
-	RoomJoined *RoomJoined `protobuf:"bytes,3,opt,name=room_joined,json=roomJoined,oneof"`
+	RoomJoined *RoomJoined `protobuf:"bytes,4,opt,name=room_joined,json=roomJoined,oneof"`
 }
 
 type ServerEvent_RoomLeft struct {
-	RoomLeft *RoomLeft `protobuf:"bytes,4,opt,name=room_left,json=roomLeft,oneof"`
+	RoomLeft *RoomLeft `protobuf:"bytes,5,opt,name=room_left,json=roomLeft,oneof"`
 }
+
+func (*ServerEvent_Error) isServerEvent_Data() {}
 
 func (*ServerEvent_Rooms) isServerEvent_Data() {}
 
@@ -131,13 +147,14 @@ var File_chat_server_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a chat/server/v1/room_events.proto\"\xda\x01\n" +
+	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\x8f\x02\n" +
 	"\vServerEvent\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversion\x121\n" +
-	"\x05rooms\x18\x02 \x01(\v2\x19.chat.server.v1.RoomInfosH\x00R\x05rooms\x12=\n" +
-	"\vroom_joined\x18\x03 \x01(\v2\x1a.chat.server.v1.RoomJoinedH\x00R\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x123\n" +
+	"\x05error\x18\x02 \x01(\v2\x1b.chat.server.v1.ServerErrorH\x00R\x05error\x121\n" +
+	"\x05rooms\x18\x03 \x01(\v2\x19.chat.server.v1.RoomInfosH\x00R\x05rooms\x12=\n" +
+	"\vroom_joined\x18\x04 \x01(\v2\x1a.chat.server.v1.RoomJoinedH\x00R\n" +
 	"roomJoined\x127\n" +
-	"\troom_left\x18\x04 \x01(\v2\x18.chat.server.v1.RoomLeftH\x00R\broomLeftB\x06\n" +
+	"\troom_left\x18\x05 \x01(\v2\x18.chat.server.v1.RoomLeftH\x00R\broomLeftB\x06\n" +
 	"\x04dataB\x83\x01\n" +
 	"\x12com.chat.server.v1B\n" +
 	"EventProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
@@ -157,19 +174,21 @@ func file_chat_server_v1_event_proto_rawDescGZIP() []byte {
 var file_chat_server_v1_event_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_chat_server_v1_event_proto_goTypes = []any{
 	(*ServerEvent)(nil), // 0: chat.server.v1.ServerEvent
-	(*RoomInfos)(nil),   // 1: chat.server.v1.RoomInfos
-	(*RoomJoined)(nil),  // 2: chat.server.v1.RoomJoined
-	(*RoomLeft)(nil),    // 3: chat.server.v1.RoomLeft
+	(*ServerError)(nil), // 1: chat.server.v1.ServerError
+	(*RoomInfos)(nil),   // 2: chat.server.v1.RoomInfos
+	(*RoomJoined)(nil),  // 3: chat.server.v1.RoomJoined
+	(*RoomLeft)(nil),    // 4: chat.server.v1.RoomLeft
 }
 var file_chat_server_v1_event_proto_depIdxs = []int32{
-	1, // 0: chat.server.v1.ServerEvent.rooms:type_name -> chat.server.v1.RoomInfos
-	2, // 1: chat.server.v1.ServerEvent.room_joined:type_name -> chat.server.v1.RoomJoined
-	3, // 2: chat.server.v1.ServerEvent.room_left:type_name -> chat.server.v1.RoomLeft
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // 0: chat.server.v1.ServerEvent.error:type_name -> chat.server.v1.ServerError
+	2, // 1: chat.server.v1.ServerEvent.rooms:type_name -> chat.server.v1.RoomInfos
+	3, // 2: chat.server.v1.ServerEvent.room_joined:type_name -> chat.server.v1.RoomJoined
+	4, // 3: chat.server.v1.ServerEvent.room_left:type_name -> chat.server.v1.RoomLeft
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_server_v1_event_proto_init() }
@@ -177,8 +196,10 @@ func file_chat_server_v1_event_proto_init() {
 	if File_chat_server_v1_event_proto != nil {
 		return
 	}
+	file_chat_server_v1_error_events_proto_init()
 	file_chat_server_v1_room_events_proto_init()
 	file_chat_server_v1_event_proto_msgTypes[0].OneofWrappers = []any{
+		(*ServerEvent_Error)(nil),
 		(*ServerEvent_Rooms)(nil),
 		(*ServerEvent_RoomJoined)(nil),
 		(*ServerEvent_RoomLeft)(nil),

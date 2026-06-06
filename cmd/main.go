@@ -75,10 +75,11 @@ func main() {
 	userService := user.NewService(sessions, users)
 	roomService := room.NewService()
 
-	// 创建请求处理器
+	// 创建 HTTP 请求处理器
 	userHandler := user.NewHandler(userService)
-	roomHandler := room.NewHandler(roomService)
+	roomHandler := room.NewHandler(userService, roomService)
 
+	// 创建 WebSocket 请求处理器
 	wsHandler := network.NewServer(userService)
 	{
 		wsHandler.HandleFunc(roomHandler.Handle)

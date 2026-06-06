@@ -156,3 +156,8 @@ func (s *Service) VerifyToken(ctx context.Context, token string) (uuid.UUID, err
 
 	return id, nil
 }
+
+// [TODO]
+func (s *Service) GetUserByID(ctx context.Context, userID uuid.UUID) (*User, error) {
+	return s.users.GetByID(ctx, userID)
+}

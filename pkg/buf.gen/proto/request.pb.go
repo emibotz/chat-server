@@ -131,7 +131,7 @@ var File_chat_client_v1_request_proto protoreflect.FileDescriptor
 
 const file_chat_client_v1_request_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/client/v1/request.proto\x12\x0echat.client.v1\x1a\x1echat/client/v1/room_reqs.proto\"\xdf\x01\n" +
+	"\x1cchat/client/v1/request.proto\x12\x0echat.client.v1\x1a\x19chat/client/v1/room.proto\"\xdf\x01\n" +
 	"\rClientRequest\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x127\n" +
 	"\tget_rooms\x18\x02 \x01(\v2\x18.chat.client.v1.GetRoomsH\x00R\bgetRooms\x127\n" +
@@ -176,7 +176,7 @@ func file_chat_client_v1_request_proto_init() {
 	if File_chat_client_v1_request_proto != nil {
 		return
 	}
-	file_chat_client_v1_room_reqs_proto_init()
+	file_chat_client_v1_room_proto_init()
 	file_chat_client_v1_request_proto_msgTypes[0].OneofWrappers = []any{
 		(*ClientRequest_GetRooms)(nil),
 		(*ClientRequest_JoinRoom)(nil),

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: chat/client/v1/room_reqs.proto
+// source: chat/client/v1/room.proto
 
 package proto
 
@@ -29,7 +29,7 @@ type GetRooms struct {
 
 func (x *GetRooms) Reset() {
 	*x = GetRooms{}
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[0]
+	mi := &file_chat_client_v1_room_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -41,7 +41,7 @@ func (x *GetRooms) String() string {
 func (*GetRooms) ProtoMessage() {}
 
 func (x *GetRooms) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[0]
+	mi := &file_chat_client_v1_room_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54,7 +54,7 @@ func (x *GetRooms) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRooms.ProtoReflect.Descriptor instead.
 func (*GetRooms) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_reqs_proto_rawDescGZIP(), []int{0}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{0}
 }
 
 type JoinRoom struct {
@@ -66,7 +66,7 @@ type JoinRoom struct {
 
 func (x *JoinRoom) Reset() {
 	*x = JoinRoom{}
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[1]
+	mi := &file_chat_client_v1_room_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -78,7 +78,7 @@ func (x *JoinRoom) String() string {
 func (*JoinRoom) ProtoMessage() {}
 
 func (x *JoinRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[1]
+	mi := &file_chat_client_v1_room_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -91,7 +91,7 @@ func (x *JoinRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoom.ProtoReflect.Descriptor instead.
 func (*JoinRoom) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_reqs_proto_rawDescGZIP(), []int{1}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *JoinRoom) GetNum() int64 {
@@ -109,7 +109,7 @@ type LeaveRoom struct {
 
 func (x *LeaveRoom) Reset() {
 	*x = LeaveRoom{}
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[2]
+	mi := &file_chat_client_v1_room_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +121,7 @@ func (x *LeaveRoom) String() string {
 func (*LeaveRoom) ProtoMessage() {}
 
 func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_reqs_proto_msgTypes[2]
+	mi := &file_chat_client_v1_room_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,40 +134,40 @@ func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoom.ProtoReflect.Descriptor instead.
 func (*LeaveRoom) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_reqs_proto_rawDescGZIP(), []int{2}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{2}
 }
 
-var File_chat_client_v1_room_reqs_proto protoreflect.FileDescriptor
+var File_chat_client_v1_room_proto protoreflect.FileDescriptor
 
-const file_chat_client_v1_room_reqs_proto_rawDesc = "" +
+const file_chat_client_v1_room_proto_rawDesc = "" +
 	"\n" +
-	"\x1echat/client/v1/room_reqs.proto\x12\x0echat.client.v1\"\n" +
+	"\x19chat/client/v1/room.proto\x12\x0echat.client.v1\"\n" +
 	"\n" +
 	"\bGetRooms\"\x1c\n" +
 	"\bJoinRoom\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x03R\x03num\"\v\n" +
-	"\tLeaveRoomB\x86\x01\n" +
-	"\x12com.chat.client.v1B\rRoomReqsProtoP\x01Z\a./proto\xa2\x02\x03CCX\xaa\x02\x0eChat.Client.V1\xca\x02\x0eChat\\Client\\V1\xe2\x02\x1aChat\\Client\\V1\\GPBMetadata\xea\x02\x10Chat::Client::V1b\beditionsp\xe8\a"
+	"\tLeaveRoomB\x82\x01\n" +
+	"\x12com.chat.client.v1B\tRoomProtoP\x01Z\a./proto\xa2\x02\x03CCX\xaa\x02\x0eChat.Client.V1\xca\x02\x0eChat\\Client\\V1\xe2\x02\x1aChat\\Client\\V1\\GPBMetadata\xea\x02\x10Chat::Client::V1b\beditionsp\xe8\a"
 
 var (
-	file_chat_client_v1_room_reqs_proto_rawDescOnce sync.Once
-	file_chat_client_v1_room_reqs_proto_rawDescData []byte
+	file_chat_client_v1_room_proto_rawDescOnce sync.Once
+	file_chat_client_v1_room_proto_rawDescData []byte
 )
 
-func file_chat_client_v1_room_reqs_proto_rawDescGZIP() []byte {
-	file_chat_client_v1_room_reqs_proto_rawDescOnce.Do(func() {
-		file_chat_client_v1_room_reqs_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_reqs_proto_rawDesc), len(file_chat_client_v1_room_reqs_proto_rawDesc)))
+func file_chat_client_v1_room_proto_rawDescGZIP() []byte {
+	file_chat_client_v1_room_proto_rawDescOnce.Do(func() {
+		file_chat_client_v1_room_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_proto_rawDesc), len(file_chat_client_v1_room_proto_rawDesc)))
 	})
-	return file_chat_client_v1_room_reqs_proto_rawDescData
+	return file_chat_client_v1_room_proto_rawDescData
 }
 
-var file_chat_client_v1_room_reqs_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_chat_client_v1_room_reqs_proto_goTypes = []any{
+var file_chat_client_v1_room_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_chat_client_v1_room_proto_goTypes = []any{
 	(*GetRooms)(nil),  // 0: chat.client.v1.GetRooms
 	(*JoinRoom)(nil),  // 1: chat.client.v1.JoinRoom
 	(*LeaveRoom)(nil), // 2: chat.client.v1.LeaveRoom
 }
-var file_chat_client_v1_room_reqs_proto_depIdxs = []int32{
+var file_chat_client_v1_room_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -175,26 +175,26 @@ var file_chat_client_v1_room_reqs_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_chat_client_v1_room_reqs_proto_init() }
-func file_chat_client_v1_room_reqs_proto_init() {
-	if File_chat_client_v1_room_reqs_proto != nil {
+func init() { file_chat_client_v1_room_proto_init() }
+func file_chat_client_v1_room_proto_init() {
+	if File_chat_client_v1_room_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_reqs_proto_rawDesc), len(file_chat_client_v1_room_reqs_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_proto_rawDesc), len(file_chat_client_v1_room_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_chat_client_v1_room_reqs_proto_goTypes,
-		DependencyIndexes: file_chat_client_v1_room_reqs_proto_depIdxs,
-		MessageInfos:      file_chat_client_v1_room_reqs_proto_msgTypes,
+		GoTypes:           file_chat_client_v1_room_proto_goTypes,
+		DependencyIndexes: file_chat_client_v1_room_proto_depIdxs,
+		MessageInfos:      file_chat_client_v1_room_proto_msgTypes,
 	}.Build()
-	File_chat_client_v1_room_reqs_proto = out.File
-	file_chat_client_v1_room_reqs_proto_goTypes = nil
-	file_chat_client_v1_room_reqs_proto_depIdxs = nil
+	File_chat_client_v1_room_proto = out.File
+	file_chat_client_v1_room_proto_goTypes = nil
+	file_chat_client_v1_room_proto_depIdxs = nil
 }
