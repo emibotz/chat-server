@@ -113,7 +113,7 @@ func (s *users) Update(ctx context.Context, user *user.User) error {
 	// 开启事务并自动回滚，防止误更新多个记录
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("pgsql tx begin failed: %v", err)
+		return fmt.Errorf("pgsql tx begin failed: %w", err)
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil {
@@ -135,7 +135,7 @@ WHERE
 	// 执行更新
 	cmd, err := tx.Exec(ctx, pgsql, user.ID, user.Name, user.Auth)
 	if err != nil {
-		return fmt.Errorf("pgsql users update failed: %v", err)
+		return fmt.Errorf("pgsql users update failed: %w", err)
 	}
 
 	// 如果影响的行数不等于 1 ，返回错误
