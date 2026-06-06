@@ -2,17 +2,17 @@ package network
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"net/http"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/errcode"
+	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/emibotz/chat-server/pkg/response"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
 	"google.golang.org/protobuf/proto"
@@ -122,31 +122,14 @@ func (s *Server) handleClient(ctx context.Context, client *Client) error {
 }
 
 func (s *Server) Handle(c *echo.Context) error {
+	// 从上下文中获取用户 ID
+	id, ok := c.Get(key.ContextUserID).(uuid.UUID)
+	if !ok {
+		return response.Unauthorized(c)
+	}
+
 	// 获取请求上下文
 	ctx := c.Request().Context()
-
-	// 获取认证头
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return response.Unauthorized(c)
-	}
-
-	// 解析认证头
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		return response.Unauthorized(c)
-	}
-
-	// 验证 Token 并获取用户 ID
-	token := parts[1]
-	id, err := s.userService.VerifyToken(ctx, token)
-	if err != nil {
-		if errors.Is(err, user.ErrTokenUnauthorized) {
-			return response.Unauthorized(c)
-		}
-
-		return response.InternalServerError(c, err)
-	}
 
 	// 建立 Websocket 连接
 	conn, err := s.wsUpgrader.Upgrade(c.Response(), c.Request(), nil)

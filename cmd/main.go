@@ -10,33 +10,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/emibotz/chat-server/internal/middleware"
 	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/room"
 	"github.com/emibotz/chat-server/internal/store/pgsql"
 	"github.com/emibotz/chat-server/internal/store/redis"
 	"github.com/emibotz/chat-server/internal/user"
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
 )
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-// [TODO]
-func handleWebSocket(c *echo.Context) error {
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	return conn.Close()
-}
 
 func main() {
 	// 创建根上下文
@@ -50,6 +33,7 @@ func main() {
 
 	// 加载认证配置
 	user.Config.Load()
+	user.Pepper = os.Getenv("AUTH_PEPPER")
 
 	// 创建 Redis 数据库仓库
 	redisAddr := os.Getenv("REDIS_ADDR")
@@ -100,7 +84,7 @@ func main() {
 		}
 	}
 
-	e.GET("/ws", wsHandler.Handle)
+	e.GET("/ws", wsHandler.Handle, middleware.Auth(userService))
 
 	// 读取服务器监听地址
 	serverAddr := os.Getenv("ADDR")
