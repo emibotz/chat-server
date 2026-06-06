@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"sync"
 
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/google/uuid"
@@ -15,6 +16,8 @@ var (
 )
 
 type Client struct {
+	mu sync.RWMutex
+
 	userID uuid.UUID
 	wsConn *websocket.Conn
 }
@@ -24,6 +27,9 @@ func (c *Client) GetUserID() uuid.UUID {
 }
 
 func (c *Client) send(bytes []byte) error {
+	c.mu.Lock()
+	defer c.mu.Lock()
+
 	return c.wsConn.WriteMessage(websocket.BinaryMessage, bytes)
 }
 
