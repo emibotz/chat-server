@@ -28,7 +28,7 @@ func (c *Client) GetUserID() uuid.UUID {
 
 func (c *Client) send(bytes []byte) error {
 	c.mu.Lock()
-	defer c.mu.Lock()
+	defer c.mu.Unlock()
 
 	return c.wsConn.WriteMessage(websocket.BinaryMessage, bytes)
 }
