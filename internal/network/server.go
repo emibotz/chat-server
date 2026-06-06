@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
@@ -18,6 +19,8 @@ import (
 )
 
 type Server struct {
+	mu sync.RWMutex
+
 	userService *user.Service
 
 	wsUpgrader *websocket.Upgrader
@@ -46,18 +49,18 @@ func (s *Server) HandleFunc(handler ClientRequestHandler) {
 }
 
 func (s *Server) disconnectClient(client *Client) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	i := slices.Index(s.clients, client)
 	s.clients = slices.Delete(s.clients, i, i+1)
 
 	return client.wsConn.Close()
 }
 
-func (s *Server) handleClient(client *Client) error {
+func (s *Server) handleClient(ctx context.Context, client *Client) error {
 	// 在函数退出时同步断开客户端连接
 	defer s.disconnectClient(client)
-
-	// 创建上下文
-	ctx := context.TODO()
 
 	for {
 		// 读取信息
@@ -81,6 +84,8 @@ func (s *Server) handleClient(client *Client) error {
 
 			continue
 		}
+
+		// [TODO] 验证 API 版本
 
 		// 创建上下文
 		ctx, done := context.WithCancel(ctx)
@@ -156,10 +161,12 @@ func (s *Server) Handle(c *echo.Context) error {
 		wsConn: conn,
 	}
 
+	s.mu.Lock()
 	s.clients = append(s.clients, &client)
+	s.mu.Unlock()
 
 	// 处理客户端请求
-	if err := s.handleClient(&client); err != nil {
+	if err := s.handleClient(ctx, &client); err != nil {
 		return response.InternalServerError(c, err)
 	}
 
