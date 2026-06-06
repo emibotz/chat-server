@@ -8,10 +8,6 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-var (
-	ContextKeyUserID = "user_id"
-)
-
 type handler struct {
 	service *Service
 }
