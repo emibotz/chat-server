@@ -8,6 +8,7 @@ import (
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/errcode"
+	"github.com/emibotz/chat-server/pkg/logger"
 )
 
 type handler struct {
@@ -30,7 +31,7 @@ func (h *handler) getRooms(c *network.Context) error {
 	// 查询房间
 	rooms, err := h.roomService.GetRooms(c)
 	if err != nil {
-		return fmt.Errorf("get rooms failed: %w", err)
+		return errcode.SendError(c, errcode.InternalError)
 	}
 
 	// 构建回复
@@ -67,18 +68,13 @@ func (h *handler) joinRoom(c *network.Context) error {
 
 	u, err := h.userService.GetUserByID(c, userID)
 	if err != nil {
-		return fmt.Errorf("get user by id failed: %w", err)
+		logger.Error("get user by id failed", err)
+		return errcode.SendInternalError(c)
 	}
 
-	// 如果没有用户，返回错误信息
+	// 如果没有用户，返回未认证
 	if u == nil {
-		event := errcode.NewEvent(errcode.Unauthorized)
-
-		if err := c.Client.SendEvent(event); err != nil {
-			return fmt.Errorf("client send event failed: %w", err)
-		}
-
-		return nil
+		return errcode.SendUnauthorized(c)
 	}
 
 	// 获取指定房间
@@ -87,40 +83,48 @@ func (h *handler) joinRoom(c *network.Context) error {
 	r, err := h.roomService.GetRoomByNum(c, num)
 	if err != nil {
 
-		// 返回房间不存在信息
+		// 如果房间不存在，返回房间不存在
 		if errors.Is(err, ErrRoomNotExist) {
-			event := errcode.NewEvent(errcode.RoomNotFound)
-
-			if err := c.Client.SendEvent(event); err != nil {
-				return fmt.Errorf("client send error failed: %w", err)
-			}
+			return errcode.SendError(c, errcode.RoomNotFound)
 		}
 
-		// 返回常规错误
-		return fmt.Errorf("get room by num failed: %w", err)
+		// 返回服务器内部错误
+		logger.Error("get room by num failed", err)
+		return errcode.SendInternalError(c)
 	}
 
 	// 用户加入房间
 	if err := h.roomService.UserJoinRoom(c, r, u); err != nil {
 
-		// 返回房间已满信息
+		// 如果房间已满，返回房间已满
 		if errors.Is(err, ErrRoomIsFull) {
-			event := errcode.NewEvent(errcode.RoomIsFull)
-
-			if err := c.Client.SendEvent(event); err != nil {
-				return fmt.Errorf("client send error failed: %w", err)
-			}
-
-			return nil
+			return errcode.SendError(c, errcode.RoomIsFull)
 		}
 
-		// 返回常规错误
-		return fmt.Errorf("user join room failed: %w", err)
+		// 返回服务器内部错误
+		logger.Error("user join room failed", err)
+		return errcode.SendInternalError(c)
 	}
 
+	// [TODO] 广播用户加入信息
+
+	// [TODO] 获取房间内用户信息
+
 	// 发送加入成功信息
+	id := r.ID.String()
+
 	event := &pbuf.ServerEvent{
-		Data: &pbuf.ServerEvent_RoomJoined{},
+		Data: &pbuf.ServerEvent_RoomJoined{
+			RoomJoined: &pbuf.RoomJoined{
+				Id:   &id,
+				Num:  &r.Num,
+				Name: &r.Name,
+
+				// [TODO]
+				Owner: nil,
+				Users: nil,
+			},
+		},
 	}
 
 	if err := c.Client.SendEvent(event); err != nil {
@@ -137,54 +141,46 @@ func (h *handler) leaveRoom(c *network.Context) error {
 
 	user, err := h.userService.GetUserByID(c, userID)
 	if err != nil {
-		return fmt.Errorf("get user by id failed: %w", err)
+		// 如果获取失败，返回服务器内部错误
+		logger.Error("get user by id failed", err)
+		return errcode.SendInternalError(c)
 	}
 
-	// 如果没有用户，返回错误信息
+	// 如果没有用户，返回未认证
 	if user == nil {
-		event := errcode.NewEvent(errcode.Unauthorized)
-
-		if err := c.Client.SendEvent(event); err != nil {
-			return fmt.Errorf("client send error failed: %w", err)
-		}
-
-		return nil
+		return errcode.SendUnauthorized(c)
 	}
 
 	// 获取用户所在房间
 	room, err := h.roomService.GetRoomByUserID(c, user.ID)
 	if err != nil {
 
-		// 返回用户不在房间中错误信息
+		// 如果用户不在房间中，返回用户不在房间中
 		if errors.Is(err, ErrNotInRoom) {
-			event := errcode.NewEvent(errcode.UserNotInRoom)
-
-			if err := c.Client.SendEvent(event); err != nil {
-				return fmt.Errorf("client send error failed: %w", err)
-			}
-
-			return err
+			return errcode.SendError(c, errcode.UserNotInRoom)
 		}
 
-		return fmt.Errorf("get room by user id failed: %w", err)
+		// 返回服务器内部错误
+		logger.Error("get room by user id failed", err)
+		return errcode.SendInternalError(c)
 	}
 
 	// 用户退出房间
 	if err := h.roomService.UserLeaveRoom(c, room, user); err != nil {
 
-		// 返回用户不在房间中错误信息
+		// 如果用户不在房间中，返回用户不在房间中
 		if errors.Is(err, ErrNotInRoom) {
-			event := errcode.NewEvent(errcode.UserNotInRoom)
-
-			if err := c.Client.SendEvent(event); err != nil {
-				return fmt.Errorf("client send error failed: %w", err)
-			}
-
-			return nil
+			return errcode.SendError(c, errcode.UserNotInRoom)
 		}
 
-		return fmt.Errorf("user leave room failed: %w", err)
+		// 返回服务器内部错误
+		logger.Error("user leave room failed", err)
+		return errcode.SendInternalError(c)
 	}
+
+	// [TODO] 广播用户退出信息
+
+	// [TODO] 当用户是房主时，发出房间解散广播
 
 	// 发送退出成功信息
 	event := &pbuf.ServerEvent{
@@ -200,7 +196,7 @@ func (h *handler) leaveRoom(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) Handle(c *network.Context) (handled bool, err error) {
+func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
 
 	if getRooms := c.Request.GetGetRooms(); getRooms != nil {
 		return true, h.getRooms(c)

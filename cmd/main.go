@@ -64,9 +64,10 @@ func main() {
 	roomHandler := room.NewHandler(userService, roomService)
 
 	// 创建 WebSocket 请求处理器
-	wsHandler := network.NewServer(userService)
+	wsHandler := network.NewServer()
 	{
-		wsHandler.HandleFunc(roomHandler.Handle)
+		wsHandler.HandleFunc(userHandler.HandleWS)
+		wsHandler.HandleFunc(roomHandler.HandleWS)
 	}
 
 	// 创建请求处理器

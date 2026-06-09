@@ -5,14 +5,10 @@ import (
 	"sync"
 
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
+	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
-)
-
-var (
-	ClientKey  = "network.client"
-	RequestKey = "network.request"
 )
 
 type Client struct {
@@ -34,6 +30,8 @@ func (c *Client) send(bytes []byte) error {
 }
 
 func (c *Client) SendEvent(event *pbuf.ServerEvent) error {
+	event.Version = &APIVersion
+
 	bytes, err := proto.Marshal(event)
 	if err != nil {
 		return err
@@ -48,16 +46,16 @@ type Context struct {
 	Request *pbuf.ClientRequest
 }
 
-func (c *Context) Value(key any) any {
-	switch key {
-	case ClientKey:
+func (c *Context) Value(k any) any {
+	switch k {
+	case key.ContextClient:
 		return c.Client
-	case RequestKey:
+	case key.ContextRequest:
 		return c.Request
 	default:
 	}
 
-	return c.Context.Value(key)
+	return c.Context.Value(k)
 }
 
 type ClientRequestHandler func(c *Context) (handled bool, err error)

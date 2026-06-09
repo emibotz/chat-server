@@ -7,6 +7,8 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// 这个包是为 HTTP 请求准备的
+
 type HTTPResponse struct {
 	Code    int32  `json:"code" form:"code"`
 	Message string `json:"message" form:"message"`

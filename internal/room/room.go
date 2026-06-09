@@ -8,6 +8,7 @@ import (
 )
 
 // 理论上不应该有 room 包外的代码直接修改此结构体内的字段
+// [TODO] 最大用户数量
 type Room struct {
 	mu sync.RWMutex
 

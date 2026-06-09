@@ -3,7 +3,10 @@ package user
 import (
 	"errors"
 	"net/http"
+	"strings"
 
+	"github.com/emibotz/chat-server/internal/network"
+	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/response"
 	"github.com/labstack/echo/v5"
 )
@@ -21,6 +24,20 @@ func NewHandler(
 }
 
 // [TODO] 请求频率限制器
+
+// 处理 WebSocket 请求，应该在所有处理器之前注册
+// 在请求版本不兼容或用户未认证时自动中断
+func (h *handler) HandleWS(c *network.Context) (bool, error) {
+
+	if strings.Compare(c.Request.GetVersion(), network.APIVersion) != 0 {
+		return true, errcode.SendError(c, errcode.IncompatibleVersion)
+	}
+
+	// [TODO] 认证
+
+	return false, nil
+
+}
 
 func (h *handler) Register(c *echo.Context) error {
 	var req registerRequest
