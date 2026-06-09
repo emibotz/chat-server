@@ -119,11 +119,10 @@ func (x *RoomInfos) GetRooms() []*RoomInfo {
 
 type RoomJoined struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            *string                `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
-	Num           *int64                 `protobuf:"varint,2,opt,name=num" json:"num,omitempty"`
-	Name          *string                `protobuf:"bytes,3,opt,name=name" json:"name,omitempty"`
-	Owner         *string                `protobuf:"bytes,4,opt,name=owner" json:"owner,omitempty"`
-	Users         []string               `protobuf:"bytes,5,rep,name=users" json:"users,omitempty"`
+	Num           *int64                 `protobuf:"varint,1,opt,name=num" json:"num,omitempty"`
+	Name          *string                `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Owner         *ServerUserInfo        `protobuf:"bytes,3,opt,name=owner" json:"owner,omitempty"`
+	Users         []*ServerUserInfo      `protobuf:"bytes,4,rep,name=users" json:"users,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -158,13 +157,6 @@ func (*RoomJoined) Descriptor() ([]byte, []int) {
 	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RoomJoined) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
 func (x *RoomJoined) GetNum() int64 {
 	if x != nil && x.Num != nil {
 		return *x.Num
@@ -179,14 +171,14 @@ func (x *RoomJoined) GetName() string {
 	return ""
 }
 
-func (x *RoomJoined) GetOwner() string {
-	if x != nil && x.Owner != nil {
-		return *x.Owner
+func (x *RoomJoined) GetOwner() *ServerUserInfo {
+	if x != nil {
+		return x.Owner
 	}
-	return ""
+	return nil
 }
 
-func (x *RoomJoined) GetUsers() []string {
+func (x *RoomJoined) GetUsers() []*ServerUserInfo {
 	if x != nil {
 		return x.Users
 	}
@@ -229,25 +221,116 @@ func (*RoomLeft) Descriptor() ([]byte, []int) {
 	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{3}
 }
 
+type RoomUserJoined struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *ServerUserInfo        `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomUserJoined) Reset() {
+	*x = RoomUserJoined{}
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomUserJoined) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomUserJoined) ProtoMessage() {}
+
+func (x *RoomUserJoined) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomUserJoined.ProtoReflect.Descriptor instead.
+func (*RoomUserJoined) Descriptor() ([]byte, []int) {
+	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RoomUserJoined) GetUser() *ServerUserInfo {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+type RoomUserLeft struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *ServerUserInfo        `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomUserLeft) Reset() {
+	*x = RoomUserLeft{}
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomUserLeft) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomUserLeft) ProtoMessage() {}
+
+func (x *RoomUserLeft) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomUserLeft.ProtoReflect.Descriptor instead.
+func (*RoomUserLeft) Descriptor() ([]byte, []int) {
+	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RoomUserLeft) GetUser() *ServerUserInfo {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_chat_server_v1_room_events_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_room_events_proto_rawDesc = "" +
 	"\n" +
-	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\"0\n" +
+	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\x1a chat/server/v1/server_user.proto\"0\n" +
 	"\bRoomInfo\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x03R\x03num\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\";\n" +
 	"\tRoomInfos\x12.\n" +
-	"\x05rooms\x18\x01 \x03(\v2\x18.chat.server.v1.RoomInfoR\x05rooms\"n\n" +
+	"\x05rooms\x18\x01 \x03(\v2\x18.chat.server.v1.RoomInfoR\x05rooms\"\x9e\x01\n" +
 	"\n" +
-	"RoomJoined\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
-	"\x03num\x18\x02 \x01(\x03R\x03num\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x14\n" +
-	"\x05owner\x18\x04 \x01(\tR\x05owner\x12\x14\n" +
-	"\x05users\x18\x05 \x03(\tR\x05users\"\n" +
+	"RoomJoined\x12\x10\n" +
+	"\x03num\x18\x01 \x01(\x03R\x03num\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x124\n" +
+	"\x05owner\x18\x03 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x05owner\x124\n" +
+	"\x05users\x18\x04 \x03(\v2\x1e.chat.server.v1.ServerUserInfoR\x05users\"\n" +
 	"\n" +
-	"\bRoomLeftB\x88\x01\n" +
+	"\bRoomLeft\"D\n" +
+	"\x0eRoomUserJoined\x122\n" +
+	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\"B\n" +
+	"\fRoomUserLeft\x122\n" +
+	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04userB\x88\x01\n" +
 	"\x12com.chat.server.v1B\x0fRoomEventsProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
 
 var (
@@ -262,20 +345,27 @@ func file_chat_server_v1_room_events_proto_rawDescGZIP() []byte {
 	return file_chat_server_v1_room_events_proto_rawDescData
 }
 
-var file_chat_server_v1_room_events_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_chat_server_v1_room_events_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_chat_server_v1_room_events_proto_goTypes = []any{
-	(*RoomInfo)(nil),   // 0: chat.server.v1.RoomInfo
-	(*RoomInfos)(nil),  // 1: chat.server.v1.RoomInfos
-	(*RoomJoined)(nil), // 2: chat.server.v1.RoomJoined
-	(*RoomLeft)(nil),   // 3: chat.server.v1.RoomLeft
+	(*RoomInfo)(nil),       // 0: chat.server.v1.RoomInfo
+	(*RoomInfos)(nil),      // 1: chat.server.v1.RoomInfos
+	(*RoomJoined)(nil),     // 2: chat.server.v1.RoomJoined
+	(*RoomLeft)(nil),       // 3: chat.server.v1.RoomLeft
+	(*RoomUserJoined)(nil), // 4: chat.server.v1.RoomUserJoined
+	(*RoomUserLeft)(nil),   // 5: chat.server.v1.RoomUserLeft
+	(*ServerUserInfo)(nil), // 6: chat.server.v1.ServerUserInfo
 }
 var file_chat_server_v1_room_events_proto_depIdxs = []int32{
 	0, // 0: chat.server.v1.RoomInfos.rooms:type_name -> chat.server.v1.RoomInfo
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	6, // 1: chat.server.v1.RoomJoined.owner:type_name -> chat.server.v1.ServerUserInfo
+	6, // 2: chat.server.v1.RoomJoined.users:type_name -> chat.server.v1.ServerUserInfo
+	6, // 3: chat.server.v1.RoomUserJoined.user:type_name -> chat.server.v1.ServerUserInfo
+	6, // 4: chat.server.v1.RoomUserLeft.user:type_name -> chat.server.v1.ServerUserInfo
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_server_v1_room_events_proto_init() }
@@ -283,13 +373,14 @@ func file_chat_server_v1_room_events_proto_init() {
 	if File_chat_server_v1_room_events_proto != nil {
 		return
 	}
+	file_chat_server_v1_server_user_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_server_v1_room_events_proto_rawDesc), len(file_chat_server_v1_room_events_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

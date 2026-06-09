@@ -42,6 +42,7 @@ func (c *Client) SendEvent(event *pbuf.ServerEvent) error {
 
 type Context struct {
 	context.Context
+	Server  *Server
 	Client  *Client
 	Request *pbuf.ClientRequest
 }

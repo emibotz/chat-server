@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -78,6 +79,63 @@ func (s *Server) removeClient(client *Client) error {
 	return client.wsConn.Close()
 }
 
+// 通过用户 ID 找到对应的客户端连接
+func (s *Server) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*Client, error) {
+	// 给服务器加锁，防止竞态
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// 如果上下文已经结束，直接退出
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	// 通过用户 ID 获取客户端
+	c, ok := s.clientsByUserID[userID]
+	if !ok {
+
+		// 如果没有客户端，返回错误
+		return nil, fmt.Errorf("no client with user id: %s", userID)
+	}
+
+	// 返回客户端
+	return c, nil
+}
+
+// 通过多个用户 ID 找到对应的客户端连接，返回 map[uuid.UUID\]*Client
+// 当没有找到某个用户对应的客户端时，在表中对应值为空指针，需要自行检查。
+func (s *Server) GetClientsByUserIDs(ctx context.Context, userIDs ...uuid.UUID) (map[uuid.UUID]*Client, error) {
+	// 给服务器加速，防止竞态。
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// 如果上下文已经结束，直接退出
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	// 创建表
+	result := make(map[uuid.UUID]*Client)
+
+	// 遍历寻找客户端
+	for _, userID := range userIDs {
+		c, ok := s.clientsByUserID[userID]
+
+		result[userID] = c
+
+		if !ok {
+			result[userID] = nil
+		}
+	}
+
+	// 返回结果
+	return result, nil
+}
+
 // 处理客户端连接
 func (s *Server) handleClient(ctx context.Context, client *Client) error {
 	// 在函数退出时同步断开客户端连接
@@ -111,6 +169,7 @@ func (s *Server) handleClient(ctx context.Context, client *Client) error {
 
 		c := Context{
 			Context: ctx,
+			Server:  s,
 			Client:  client,
 			Request: &request,
 		}

@@ -30,6 +30,8 @@ type ServerEvent struct {
 	//	*ServerEvent_Rooms
 	//	*ServerEvent_RoomJoined
 	//	*ServerEvent_RoomLeft
+	//	*ServerEvent_RoomUserJoined
+	//	*ServerEvent_RoomUserLeft
 	Data          isServerEvent_Data `protobuf_oneof:"data"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -115,6 +117,24 @@ func (x *ServerEvent) GetRoomLeft() *RoomLeft {
 	return nil
 }
 
+func (x *ServerEvent) GetRoomUserJoined() *RoomUserJoined {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_RoomUserJoined); ok {
+			return x.RoomUserJoined
+		}
+	}
+	return nil
+}
+
+func (x *ServerEvent) GetRoomUserLeft() *RoomUserLeft {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_RoomUserLeft); ok {
+			return x.RoomUserLeft
+		}
+	}
+	return nil
+}
+
 type isServerEvent_Data interface {
 	isServerEvent_Data()
 }
@@ -135,6 +155,14 @@ type ServerEvent_RoomLeft struct {
 	RoomLeft *RoomLeft `protobuf:"bytes,5,opt,name=room_left,json=roomLeft,oneof"`
 }
 
+type ServerEvent_RoomUserJoined struct {
+	RoomUserJoined *RoomUserJoined `protobuf:"bytes,6,opt,name=room_user_joined,json=roomUserJoined,oneof"`
+}
+
+type ServerEvent_RoomUserLeft struct {
+	RoomUserLeft *RoomUserLeft `protobuf:"bytes,7,opt,name=room_user_left,json=roomUserLeft,oneof"`
+}
+
 func (*ServerEvent_Error) isServerEvent_Data() {}
 
 func (*ServerEvent_Rooms) isServerEvent_Data() {}
@@ -143,18 +171,24 @@ func (*ServerEvent_RoomJoined) isServerEvent_Data() {}
 
 func (*ServerEvent_RoomLeft) isServerEvent_Data() {}
 
+func (*ServerEvent_RoomUserJoined) isServerEvent_Data() {}
+
+func (*ServerEvent_RoomUserLeft) isServerEvent_Data() {}
+
 var File_chat_server_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\x8f\x02\n" +
+	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\xa1\x03\n" +
 	"\vServerEvent\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x123\n" +
 	"\x05error\x18\x02 \x01(\v2\x1b.chat.server.v1.ServerErrorH\x00R\x05error\x121\n" +
 	"\x05rooms\x18\x03 \x01(\v2\x19.chat.server.v1.RoomInfosH\x00R\x05rooms\x12=\n" +
 	"\vroom_joined\x18\x04 \x01(\v2\x1a.chat.server.v1.RoomJoinedH\x00R\n" +
 	"roomJoined\x127\n" +
-	"\troom_left\x18\x05 \x01(\v2\x18.chat.server.v1.RoomLeftH\x00R\broomLeftB\x06\n" +
+	"\troom_left\x18\x05 \x01(\v2\x18.chat.server.v1.RoomLeftH\x00R\broomLeft\x12J\n" +
+	"\x10room_user_joined\x18\x06 \x01(\v2\x1e.chat.server.v1.RoomUserJoinedH\x00R\x0eroomUserJoined\x12D\n" +
+	"\x0eroom_user_left\x18\a \x01(\v2\x1c.chat.server.v1.RoomUserLeftH\x00R\froomUserLeftB\x06\n" +
 	"\x04dataB\x83\x01\n" +
 	"\x12com.chat.server.v1B\n" +
 	"EventProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
@@ -173,22 +207,26 @@ func file_chat_server_v1_event_proto_rawDescGZIP() []byte {
 
 var file_chat_server_v1_event_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_chat_server_v1_event_proto_goTypes = []any{
-	(*ServerEvent)(nil), // 0: chat.server.v1.ServerEvent
-	(*ServerError)(nil), // 1: chat.server.v1.ServerError
-	(*RoomInfos)(nil),   // 2: chat.server.v1.RoomInfos
-	(*RoomJoined)(nil),  // 3: chat.server.v1.RoomJoined
-	(*RoomLeft)(nil),    // 4: chat.server.v1.RoomLeft
+	(*ServerEvent)(nil),    // 0: chat.server.v1.ServerEvent
+	(*ServerError)(nil),    // 1: chat.server.v1.ServerError
+	(*RoomInfos)(nil),      // 2: chat.server.v1.RoomInfos
+	(*RoomJoined)(nil),     // 3: chat.server.v1.RoomJoined
+	(*RoomLeft)(nil),       // 4: chat.server.v1.RoomLeft
+	(*RoomUserJoined)(nil), // 5: chat.server.v1.RoomUserJoined
+	(*RoomUserLeft)(nil),   // 6: chat.server.v1.RoomUserLeft
 }
 var file_chat_server_v1_event_proto_depIdxs = []int32{
 	1, // 0: chat.server.v1.ServerEvent.error:type_name -> chat.server.v1.ServerError
 	2, // 1: chat.server.v1.ServerEvent.rooms:type_name -> chat.server.v1.RoomInfos
 	3, // 2: chat.server.v1.ServerEvent.room_joined:type_name -> chat.server.v1.RoomJoined
 	4, // 3: chat.server.v1.ServerEvent.room_left:type_name -> chat.server.v1.RoomLeft
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	5, // 4: chat.server.v1.ServerEvent.room_user_joined:type_name -> chat.server.v1.RoomUserJoined
+	6, // 5: chat.server.v1.ServerEvent.room_user_left:type_name -> chat.server.v1.RoomUserLeft
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_chat_server_v1_event_proto_init() }
@@ -203,6 +241,8 @@ func file_chat_server_v1_event_proto_init() {
 		(*ServerEvent_Rooms)(nil),
 		(*ServerEvent_RoomJoined)(nil),
 		(*ServerEvent_RoomLeft)(nil),
+		(*ServerEvent_RoomUserJoined)(nil),
+		(*ServerEvent_RoomUserLeft)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

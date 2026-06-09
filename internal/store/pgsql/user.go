@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/emibotz/chat-server/internal/user"
 	"github.com/google/uuid"
@@ -73,6 +74,55 @@ WHERE
 
 	// 返回实例
 	return &u, nil
+}
+
+// 通过多个用户 ID 查询对应用户，返回数量可能和传入数量不相同。
+// [FIXME] 可能需要额外的错误处理！
+func (s *users) GetByIDs(ctx context.Context, ids ...uuid.UUID) ([]*user.User, error) {
+	// 带占位符的查询语句
+	pgsql := `
+SELECT
+	id, name, auth
+FROM
+	users
+WHERE
+	id IN (%s)
+	`
+
+	// 动态生成占位符字符串，并且构建参数列表
+	placeholderList := make([]string, len(ids))
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		placeholderList = append(placeholderList, fmt.Sprintf("$%d", i+1))
+		args = append(args, id)
+	}
+	placeholders := strings.Join(placeholderList, ", ")
+
+	// 构建最终查询语句
+	pgsql = fmt.Sprintf(pgsql, placeholders)
+
+	// 查询用户记录
+	rows, err := s.pool.Query(ctx, pgsql, args)
+	if err != nil {
+		return nil, fmt.Errorf("pgsql user get by ids failed: %w", err)
+	}
+	defer rows.Close()
+
+	// 扫描用户记录到列表中
+	result := make([]*user.User, 0)
+	for rows.Next() {
+		var user user.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.Auth); err != nil {
+			return nil, fmt.Errorf("scan users failed: %w", err)
+		}
+		result = append(result, &user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("scan users failed: %w", err)
+	}
+
+	// 返回结果
+	return result, nil
 }
 
 func (s *users) GetByName(ctx context.Context, username string) (*user.User, error) {
@@ -152,7 +202,7 @@ WHERE
 }
 
 func (s *users) Delete(ctx context.Context, user *user.User) error {
-	// 开启事务并自动回滚，防止误更新多个事务
+	// 开启事务并自动回滚，防止误更新多个记录
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("pgsql tx begin failed: %w", err)

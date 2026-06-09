@@ -157,7 +157,12 @@ func (s *Service) VerifyToken(ctx context.Context, token string) (uuid.UUID, err
 	return id, nil
 }
 
-// [TODO]
+// [TODO] 是否需要处理结果？
 func (s *Service) GetUserByID(ctx context.Context, userID uuid.UUID) (*User, error) {
 	return s.users.GetByID(ctx, userID)
+}
+
+// [TODO] 是否需要处理结果？
+func (s *Service) GetUsersByIDs(ctx context.Context, userIDs ...uuid.UUID) ([]*User, error) {
+	return s.users.GetByIDs(ctx, userIDs...)
 }
