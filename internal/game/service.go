@@ -6,11 +6,22 @@ import (
 	"sync"
 
 	"github.com/emibotz/chat-server/internal/user"
+	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/google/uuid"
 )
 
+type Broadcaster interface {
+	Broadcast(ctx context.Context, tick *pbuf.ServerTick, users ...uuid.UUID)
+}
+
+type NilBroadcaster struct{}
+
+func (b *NilBroadcaster) Broadcast(ctx context.Context, tick *pbuf.ServerTick, users ...uuid.UUID) {}
+
 type Service struct {
 	mu sync.RWMutex
+
+	middlewareFactories []TickMiddlewareFactory
 
 	games         []*Game
 	gamesByUserID map[uuid.UUID]*Game
@@ -20,9 +31,18 @@ func NewService() *Service {
 	return &Service{
 		mu: sync.RWMutex{},
 
+		middlewareFactories: make([]TickMiddlewareFactory, 0),
+
 		games:         make([]*Game, 0),
 		gamesByUserID: make(map[uuid.UUID]*Game),
 	}
+}
+
+func (s *Service) AddMiddlewareFactory(factory TickMiddlewareFactory) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.middlewareFactories = append(s.middlewareFactories, factory)
 }
 
 // 添加游戏的底层实现，没有加锁，需要自行处理。
@@ -72,6 +92,15 @@ func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*us
 
 	// 添加游戏
 	s.addGame(game, userIDs...)
+
+	// 创建游戏时钟
+	// [FIXME] 硬编码每秒游戏刻数量
+	clock := NewClock(ctx, 60, game)
+
+	// 装配中间件
+	for _, factory := range s.middlewareFactories {
+		clock.UseMiddleware(factory(game))
+	}
 
 	return nil
 }

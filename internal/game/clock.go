@@ -7,10 +7,18 @@ import (
 	"time"
 
 	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/google/uuid"
 )
 
 type TickHandler func(ctx *TickContext) error
 type TickMiddleware func(ctx *TickContext, tick TickHandler) TickHandler
+type TickMiddlewareFactory func(g *Game) TickMiddleware
+
+func AlwaysUse(middleware TickMiddleware) TickMiddlewareFactory {
+	return func(g *Game) TickMiddleware {
+		return middleware
+	}
+}
 
 type TickContext struct {
 	context.Context
@@ -70,8 +78,48 @@ func (c *Clock) UseMiddleware(middleware TickMiddleware) {
 	c.middlewares = append(c.middlewares, middleware)
 }
 
+func (c *Clock) handlePlayerMoveIntention(ctx *TickContext) error {
+
+	// 获取所有玩家移动意图
+	intentions, err := ctx.Game.PopPlayerMoveIntentionsByID(ctx)
+	if err != nil {
+		return fmt.Errorf("get player move intentions by id failed: %w", err)
+	}
+
+	// 获取所有意图对应的玩家
+	keys := make([]uuid.UUID, 0, len(intentions))
+	for u := range intentions {
+		keys = append(keys, u)
+	}
+
+	players, err := ctx.Game.GetPlayersByIDs(ctx, keys...)
+	if err != nil {
+		return fmt.Errorf("get players by ids failed: %w", err)
+	}
+
+	// [FIXME] 硬编码移动速度
+	delta := float64(ctx.Delta.Milliseconds()) / 1000.0
+	speed := 500.0
+
+	// 根据意图修改玩家的位置
+	for _, player := range players {
+		intention := intentions[player.GetID()]
+
+		direction := intention.Direction.Normalized()
+		velocity := direction.Multiply(speed * delta)
+
+		player.SetPosition(player.GetPosition().Add(velocity))
+	}
+
+	return nil
+}
+
 func (c *Clock) gameTick(ctx *TickContext) error {
-	// [TODO] 游戏刻内容
+
+	if err := c.handlePlayerMoveIntention(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -119,4 +167,5 @@ tickLoop:
 	}
 
 	// [TODO] 时钟结束后处理
+	c.ticker.Stop()
 }

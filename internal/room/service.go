@@ -264,10 +264,6 @@ func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
 
 	s.gameService.AddGameWithUsers(ctx, g, users...)
 
-	// 创建游戏时钟
-	// [FIXME] 硬编码每秒游戏刻数量
-	_ = game.NewClock(ctx, 60, g)
-
 	return nil
 }
 

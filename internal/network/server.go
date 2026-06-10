@@ -233,6 +233,8 @@ func (s *Server) Handle(c *echo.Context) error {
 		return response.InternalServerError(c, err)
 	}
 
+	// [TODO] 客户端处理结束，应该通知 RoomService 和 GameService 清理用户状态
+
 	// 如果客户端没有返回错误，返回空值？？？
 	// 我看到 Echo 官方示例中这样做，所以也许
 	// 这里连接已经关闭了，所以我也可以这样做？

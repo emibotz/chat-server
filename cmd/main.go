@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/emibotz/chat-server/internal/game"
+	tickMiddleware "github.com/emibotz/chat-server/internal/game/middleware"
 	"github.com/emibotz/chat-server/internal/middleware"
 	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/room"
@@ -32,9 +33,12 @@ func main() {
 		panic(err)
 	}
 
-	// 加载认证配置
-	user.Config.Load()
-	user.Pepper = os.Getenv("AUTH_PEPPER")
+	// 创建请求处理器
+	e := echo.New()
+	e.Use(echoMiddleware.RequestLogger())
+	e.Use(echoMiddleware.Recover())
+
+	wsHandler := network.NewServer()
 
 	// 创建 Redis 数据库仓库
 	redisAddr := os.Getenv("REDIS_ADDR")
@@ -56,26 +60,27 @@ func main() {
 
 	users := pgsqlDB.Users()
 
+	// 加载认证配置
+	user.Config.Load()
+	user.Pepper = os.Getenv("AUTH_PEPPER")
+
 	// 创建服务
-	userService := user.NewService(sessions, users)
 	gameService := game.NewService()
+	userService := user.NewService(sessions, users)
 	roomService := room.NewService(userService, gameService)
 
+	// 配置游戏服务使用中间件
+	gameService.AddMiddlewareFactory(game.AlwaysUse(tickMiddleware.Broadcast(wsHandler.Broadcaster())))
+
 	// 创建 HTTP 请求处理器
+	gameHandler := game.NewHandler(gameService)
 	userHandler := user.NewHandler(userService)
 	roomHandler := room.NewHandler(userService, roomService)
 
 	// 创建 WebSocket 请求处理器
-	wsHandler := network.NewServer()
-	{
-		wsHandler.HandleFunc(userHandler.HandleWS)
-		wsHandler.HandleFunc(roomHandler.HandleWS)
-	}
-
-	// 创建请求处理器
-	e := echo.New()
-	e.Use(echoMiddleware.RequestLogger())
-	e.Use(echoMiddleware.Recover())
+	wsHandler.HandleFunc(gameHandler.HandleWS)
+	wsHandler.HandleFunc(userHandler.HandleWS)
+	wsHandler.HandleFunc(roomHandler.HandleWS)
 
 	// 创建路由
 	apiRoute := e.Group("/api")

@@ -34,7 +34,11 @@ func (h *handler) HandleWS(c *network.Context) (bool, error) {
 
 	// 如果版本不匹配，返回版本不兼容
 	if strings.Compare(c.Request.GetVersion(), network.APIVersion) != 0 {
-		return true, errcode.SendError(c, errcode.IncompatibleVersion)
+		if err := errcode.SendError(c, errcode.IncompatibleVersion); err != nil {
+			return true, err
+		}
+
+		return true, response.ErrBadRequest
 	}
 
 	// 通过客户端中维护的用户 ID 获取用户
