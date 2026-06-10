@@ -293,6 +293,7 @@ func (s *Service) RoomStopGame(ctx context.Context, room *Room) error {
 
 	// 停止游戏
 	room.Game.Stop()
+	room.Game = nil
 
 	return nil
 }
