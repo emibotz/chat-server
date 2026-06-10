@@ -8,6 +8,7 @@ import (
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/errcode"
+	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/emibotz/chat-server/pkg/logger"
 )
 
@@ -63,17 +64,11 @@ func (h *handler) getRooms(c *network.Context) error {
 
 func (h *handler) joinRoom(c *network.Context) error {
 
-	// 获取用户
-	userID := c.Client.GetUserID()
-
-	user, err := h.userService.GetUserByID(c, userID)
-	if err != nil {
-		logger.Error("get user by id failed", err)
-		return errcode.SendInternalError(c)
-	}
+	// 从上下文中获取用户，应该被用户处理器注入
+	user, ok := c.Value(key.ContextUser).(*user.User)
 
 	// 如果没有用户，返回未认证
-	if user == nil {
+	if !ok {
 		return errcode.SendUnauthorized(c)
 	}
 
@@ -114,7 +109,7 @@ func (h *handler) joinRoom(c *network.Context) error {
 	}
 
 	// 创建用户进入房间事件
-	id := userID.String()
+	id := user.ID.String()
 
 	userJoined := &pbuf.ServerEvent{
 		Data: &pbuf.ServerEvent_RoomUserJoined{
@@ -196,20 +191,11 @@ func (h *handler) joinRoom(c *network.Context) error {
 
 func (h *handler) leaveRoom(c *network.Context) error {
 
-	// 通过客户端获取用户 ID
-	userID := c.Client.GetUserID()
-
-	// 通过用户 ID 查询用户记录
-	user, err := h.userService.GetUserByID(c, userID)
-	if err != nil {
-
-		// 如果查询失败，返回服务器内部错误
-		logger.Error("get user by id failed", err)
-		return errcode.SendInternalError(c)
-	}
+	// 从上下文中获取用户，应该被用户处理器注入
+	user, ok := c.Value(key.ContextUser).(*user.User)
 
 	// 如果没有用户，返回未认证
-	if user == nil {
+	if !ok {
 		return errcode.SendUnauthorized(c)
 	}
 
