@@ -29,6 +29,9 @@ type ClientRequest struct {
 	//	*ClientRequest_GetRooms
 	//	*ClientRequest_JoinRoom
 	//	*ClientRequest_LeaveRoom
+	//	*ClientRequest_StartGame
+	//	*ClientRequest_StopGame
+	//	*ClientRequest_GameRequest
 	Data          isClientRequest_Data `protobuf_oneof:"data"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -105,6 +108,33 @@ func (x *ClientRequest) GetLeaveRoom() *LeaveRoom {
 	return nil
 }
 
+func (x *ClientRequest) GetStartGame() *RoomStartGame {
+	if x != nil {
+		if x, ok := x.Data.(*ClientRequest_StartGame); ok {
+			return x.StartGame
+		}
+	}
+	return nil
+}
+
+func (x *ClientRequest) GetStopGame() *RoomStopGame {
+	if x != nil {
+		if x, ok := x.Data.(*ClientRequest_StopGame); ok {
+			return x.StopGame
+		}
+	}
+	return nil
+}
+
+func (x *ClientRequest) GetGameRequest() *ClientGameRequest {
+	if x != nil {
+		if x, ok := x.Data.(*ClientRequest_GameRequest); ok {
+			return x.GameRequest
+		}
+	}
+	return nil
+}
+
 type isClientRequest_Data interface {
 	isClientRequest_Data()
 }
@@ -121,23 +151,45 @@ type ClientRequest_LeaveRoom struct {
 	LeaveRoom *LeaveRoom `protobuf:"bytes,4,opt,name=leave_room,json=leaveRoom,oneof"`
 }
 
+type ClientRequest_StartGame struct {
+	StartGame *RoomStartGame `protobuf:"bytes,5,opt,name=start_game,json=startGame,oneof"`
+}
+
+type ClientRequest_StopGame struct {
+	StopGame *RoomStopGame `protobuf:"bytes,6,opt,name=stop_game,json=stopGame,oneof"`
+}
+
+type ClientRequest_GameRequest struct {
+	GameRequest *ClientGameRequest `protobuf:"bytes,7,opt,name=game_request,json=gameRequest,oneof"`
+}
+
 func (*ClientRequest_GetRooms) isClientRequest_Data() {}
 
 func (*ClientRequest_JoinRoom) isClientRequest_Data() {}
 
 func (*ClientRequest_LeaveRoom) isClientRequest_Data() {}
 
+func (*ClientRequest_StartGame) isClientRequest_Data() {}
+
+func (*ClientRequest_StopGame) isClientRequest_Data() {}
+
+func (*ClientRequest_GameRequest) isClientRequest_Data() {}
+
 var File_chat_client_v1_request_proto protoreflect.FileDescriptor
 
 const file_chat_client_v1_request_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/client/v1/request.proto\x12\x0echat.client.v1\x1a\x19chat/client/v1/room.proto\"\xdf\x01\n" +
+	"\x1cchat/client/v1/request.proto\x12\x0echat.client.v1\x1a\x19chat/client/v1/game.proto\x1a\x19chat/client/v1/room.proto\"\xa4\x03\n" +
 	"\rClientRequest\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x127\n" +
 	"\tget_rooms\x18\x02 \x01(\v2\x18.chat.client.v1.GetRoomsH\x00R\bgetRooms\x127\n" +
 	"\tjoin_room\x18\x03 \x01(\v2\x18.chat.client.v1.JoinRoomH\x00R\bjoinRoom\x12:\n" +
 	"\n" +
-	"leave_room\x18\x04 \x01(\v2\x19.chat.client.v1.LeaveRoomH\x00R\tleaveRoomB\x06\n" +
+	"leave_room\x18\x04 \x01(\v2\x19.chat.client.v1.LeaveRoomH\x00R\tleaveRoom\x12>\n" +
+	"\n" +
+	"start_game\x18\x05 \x01(\v2\x1d.chat.client.v1.RoomStartGameH\x00R\tstartGame\x12;\n" +
+	"\tstop_game\x18\x06 \x01(\v2\x1c.chat.client.v1.RoomStopGameH\x00R\bstopGame\x12F\n" +
+	"\fgame_request\x18\a \x01(\v2!.chat.client.v1.ClientGameRequestH\x00R\vgameRequestB\x06\n" +
 	"\x04dataB\x85\x01\n" +
 	"\x12com.chat.client.v1B\fRequestProtoP\x01Z\a./proto\xa2\x02\x03CCX\xaa\x02\x0eChat.Client.V1\xca\x02\x0eChat\\Client\\V1\xe2\x02\x1aChat\\Client\\V1\\GPBMetadata\xea\x02\x10Chat::Client::V1b\beditionsp\xe8\a"
 
@@ -155,20 +207,26 @@ func file_chat_client_v1_request_proto_rawDescGZIP() []byte {
 
 var file_chat_client_v1_request_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_chat_client_v1_request_proto_goTypes = []any{
-	(*ClientRequest)(nil), // 0: chat.client.v1.ClientRequest
-	(*GetRooms)(nil),      // 1: chat.client.v1.GetRooms
-	(*JoinRoom)(nil),      // 2: chat.client.v1.JoinRoom
-	(*LeaveRoom)(nil),     // 3: chat.client.v1.LeaveRoom
+	(*ClientRequest)(nil),     // 0: chat.client.v1.ClientRequest
+	(*GetRooms)(nil),          // 1: chat.client.v1.GetRooms
+	(*JoinRoom)(nil),          // 2: chat.client.v1.JoinRoom
+	(*LeaveRoom)(nil),         // 3: chat.client.v1.LeaveRoom
+	(*RoomStartGame)(nil),     // 4: chat.client.v1.RoomStartGame
+	(*RoomStopGame)(nil),      // 5: chat.client.v1.RoomStopGame
+	(*ClientGameRequest)(nil), // 6: chat.client.v1.ClientGameRequest
 }
 var file_chat_client_v1_request_proto_depIdxs = []int32{
 	1, // 0: chat.client.v1.ClientRequest.get_rooms:type_name -> chat.client.v1.GetRooms
 	2, // 1: chat.client.v1.ClientRequest.join_room:type_name -> chat.client.v1.JoinRoom
 	3, // 2: chat.client.v1.ClientRequest.leave_room:type_name -> chat.client.v1.LeaveRoom
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 3: chat.client.v1.ClientRequest.start_game:type_name -> chat.client.v1.RoomStartGame
+	5, // 4: chat.client.v1.ClientRequest.stop_game:type_name -> chat.client.v1.RoomStopGame
+	6, // 5: chat.client.v1.ClientRequest.game_request:type_name -> chat.client.v1.ClientGameRequest
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_chat_client_v1_request_proto_init() }
@@ -176,11 +234,15 @@ func file_chat_client_v1_request_proto_init() {
 	if File_chat_client_v1_request_proto != nil {
 		return
 	}
+	file_chat_client_v1_game_proto_init()
 	file_chat_client_v1_room_proto_init()
 	file_chat_client_v1_request_proto_msgTypes[0].OneofWrappers = []any{
 		(*ClientRequest_GetRooms)(nil),
 		(*ClientRequest_JoinRoom)(nil),
 		(*ClientRequest_LeaveRoom)(nil),
+		(*ClientRequest_StartGame)(nil),
+		(*ClientRequest_StopGame)(nil),
+		(*ClientRequest_GameRequest)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

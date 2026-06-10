@@ -6,6 +6,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/emibotz/chat-server/internal/game"
 	"github.com/emibotz/chat-server/internal/user"
 	"github.com/google/uuid"
 )
@@ -17,10 +18,16 @@ var (
 	ErrRoomIsFull    = fmt.Errorf("this room is full.")
 
 	ErrNotInRoom = fmt.Errorf("user is not in this room.")
+
+	ErrGameAlreadyStarted = fmt.Errorf("game is already started.")
+	ErrGameNotStarted     = fmt.Errorf("game is not started.")
 )
 
 type Service struct {
 	mu sync.RWMutex
+
+	userService *user.Service
+	gameService *game.Service
 
 	roomsByNum    map[int64]*Room
 	roomsByUserID map[uuid.UUID]*Room
@@ -29,9 +36,15 @@ type Service struct {
 	freeRoomNumber []int64
 }
 
-func NewService() *Service {
+func NewService(
+	userService *user.Service,
+	gameService *game.Service,
+) *Service {
 	return &Service{
 		mu: sync.RWMutex{},
+
+		userService: userService,
+		gameService: gameService,
 
 		roomsByNum:    make(map[int64]*Room),
 		roomsByUserID: make(map[uuid.UUID]*Room),
@@ -153,6 +166,12 @@ func (s *Service) UserJoinRoom(ctx context.Context, room *Room, user *user.User)
 
 // 删除房间的底层实现，没有加锁
 func (s *Service) deleteRoom(room *Room) {
+
+	// 如果房间有游戏，停止游戏运行
+	if room.Game != nil {
+		room.Game.Stop()
+	}
+
 	// 删除所有用户与当前房间的联系
 	for _, userID := range room.Users {
 		delete(s.roomsByUserID, userID)
@@ -208,6 +227,72 @@ func (s *Service) DeleteRoom(ctx context.Context, room *Room) error {
 	}
 
 	s.deleteRoom(room)
+
+	return nil
+}
+
+func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
+	room.mu.Lock()
+	defer room.mu.Unlock()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
+	// 如果房间已经有游戏，返回游戏已开始
+	if room.Game != nil {
+		return ErrGameAlreadyStarted
+	}
+
+	// 创建游戏根上下文
+	gameContext, cancel := context.WithCancel(context.Background())
+
+	// 创建游戏
+	g, err := game.New(gameContext, cancel)
+	if err != nil {
+		return err
+	}
+	room.Game = g
+
+	// 获取房间内用户信息
+	users, err := s.userService.GetUsersByIDs(ctx, room.Users...)
+	if err != nil {
+		return err
+	}
+
+	s.gameService.AddGameWithUsers(ctx, g, users...)
+
+	// 创建游戏时钟
+	// [FIXME] 硬编码每秒游戏刻数量
+	_ = game.NewClock(ctx, 60, g)
+
+	return nil
+}
+
+func (s *Service) RoomStopGame(ctx context.Context, room *Room) error {
+	room.mu.Lock()
+	defer room.mu.Unlock()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
+	// 如果房间没有游戏，返回游戏未开始
+	if room.Game == nil {
+		return ErrGameNotStarted
+	}
+
+	// 删除游戏
+	if err := s.gameService.RemoveGame(ctx, room.Game); err != nil {
+		return err
+	}
+
+	// 停止游戏
+	room.Game.Stop()
 
 	return nil
 }

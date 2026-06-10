@@ -137,6 +137,78 @@ func (*LeaveRoom) Descriptor() ([]byte, []int) {
 	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{2}
 }
 
+type RoomStartGame struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomStartGame) Reset() {
+	*x = RoomStartGame{}
+	mi := &file_chat_client_v1_room_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomStartGame) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomStartGame) ProtoMessage() {}
+
+func (x *RoomStartGame) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_client_v1_room_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomStartGame.ProtoReflect.Descriptor instead.
+func (*RoomStartGame) Descriptor() ([]byte, []int) {
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{3}
+}
+
+type RoomStopGame struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomStopGame) Reset() {
+	*x = RoomStopGame{}
+	mi := &file_chat_client_v1_room_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomStopGame) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomStopGame) ProtoMessage() {}
+
+func (x *RoomStopGame) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_client_v1_room_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomStopGame.ProtoReflect.Descriptor instead.
+func (*RoomStopGame) Descriptor() ([]byte, []int) {
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{4}
+}
+
 var File_chat_client_v1_room_proto protoreflect.FileDescriptor
 
 const file_chat_client_v1_room_proto_rawDesc = "" +
@@ -146,7 +218,9 @@ const file_chat_client_v1_room_proto_rawDesc = "" +
 	"\bGetRooms\"\x1c\n" +
 	"\bJoinRoom\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x03R\x03num\"\v\n" +
-	"\tLeaveRoomB\x82\x01\n" +
+	"\tLeaveRoom\"\x0f\n" +
+	"\rRoomStartGame\"\x0e\n" +
+	"\fRoomStopGameB\x82\x01\n" +
 	"\x12com.chat.client.v1B\tRoomProtoP\x01Z\a./proto\xa2\x02\x03CCX\xaa\x02\x0eChat.Client.V1\xca\x02\x0eChat\\Client\\V1\xe2\x02\x1aChat\\Client\\V1\\GPBMetadata\xea\x02\x10Chat::Client::V1b\beditionsp\xe8\a"
 
 var (
@@ -161,11 +235,13 @@ func file_chat_client_v1_room_proto_rawDescGZIP() []byte {
 	return file_chat_client_v1_room_proto_rawDescData
 }
 
-var file_chat_client_v1_room_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_chat_client_v1_room_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_chat_client_v1_room_proto_goTypes = []any{
-	(*GetRooms)(nil),  // 0: chat.client.v1.GetRooms
-	(*JoinRoom)(nil),  // 1: chat.client.v1.JoinRoom
-	(*LeaveRoom)(nil), // 2: chat.client.v1.LeaveRoom
+	(*GetRooms)(nil),      // 0: chat.client.v1.GetRooms
+	(*JoinRoom)(nil),      // 1: chat.client.v1.JoinRoom
+	(*LeaveRoom)(nil),     // 2: chat.client.v1.LeaveRoom
+	(*RoomStartGame)(nil), // 3: chat.client.v1.RoomStartGame
+	(*RoomStopGame)(nil),  // 4: chat.client.v1.RoomStopGame
 }
 var file_chat_client_v1_room_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -186,7 +262,7 @@ func file_chat_client_v1_room_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_proto_rawDesc), len(file_chat_client_v1_room_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

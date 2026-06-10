@@ -15,7 +15,9 @@ type apiType int32
 
 var (
 	SystemAPI apiType = 000
-	RoomAPI   apiType = 001
+	UserAPI   apiType = 001
+	RoomAPI   apiType = 002
+	GameAPI   apiType = 003
 )
 
 type errType int32

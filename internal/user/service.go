@@ -34,7 +34,7 @@ var (
 // 必定可用的用户名和密码
 var (
 	validUsername = "emi"
-	validPassword = "emibotz"
+	validPassword = "emibotzpassword"
 )
 
 // 验证用户名和密码是否可用

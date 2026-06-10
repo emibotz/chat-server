@@ -52,6 +52,9 @@ func NewServer() *Server {
 
 // 添加处理器
 func (s *Server) HandleFunc(handler ClientRequestHandler) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.handlers = append(s.handlers, handler)
 }
 

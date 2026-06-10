@@ -309,6 +309,78 @@ func (x *RoomUserLeft) GetUser() *ServerUserInfo {
 	return nil
 }
 
+type RoomGameStarted struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomGameStarted) Reset() {
+	*x = RoomGameStarted{}
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomGameStarted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomGameStarted) ProtoMessage() {}
+
+func (x *RoomGameStarted) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomGameStarted.ProtoReflect.Descriptor instead.
+func (*RoomGameStarted) Descriptor() ([]byte, []int) {
+	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{6}
+}
+
+type RoomGameStopped struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoomGameStopped) Reset() {
+	*x = RoomGameStopped{}
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoomGameStopped) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoomGameStopped) ProtoMessage() {}
+
+func (x *RoomGameStopped) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_server_v1_room_events_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoomGameStopped.ProtoReflect.Descriptor instead.
+func (*RoomGameStopped) Descriptor() ([]byte, []int) {
+	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{7}
+}
+
 var File_chat_server_v1_room_events_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_room_events_proto_rawDesc = "" +
@@ -330,7 +402,9 @@ const file_chat_server_v1_room_events_proto_rawDesc = "" +
 	"\x0eRoomUserJoined\x122\n" +
 	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\"B\n" +
 	"\fRoomUserLeft\x122\n" +
-	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04userB\x88\x01\n" +
+	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\"\x11\n" +
+	"\x0fRoomGameStarted\"\x11\n" +
+	"\x0fRoomGameStoppedB\x88\x01\n" +
 	"\x12com.chat.server.v1B\x0fRoomEventsProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
 
 var (
@@ -345,22 +419,24 @@ func file_chat_server_v1_room_events_proto_rawDescGZIP() []byte {
 	return file_chat_server_v1_room_events_proto_rawDescData
 }
 
-var file_chat_server_v1_room_events_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_chat_server_v1_room_events_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_chat_server_v1_room_events_proto_goTypes = []any{
-	(*RoomInfo)(nil),       // 0: chat.server.v1.RoomInfo
-	(*RoomInfos)(nil),      // 1: chat.server.v1.RoomInfos
-	(*RoomJoined)(nil),     // 2: chat.server.v1.RoomJoined
-	(*RoomLeft)(nil),       // 3: chat.server.v1.RoomLeft
-	(*RoomUserJoined)(nil), // 4: chat.server.v1.RoomUserJoined
-	(*RoomUserLeft)(nil),   // 5: chat.server.v1.RoomUserLeft
-	(*ServerUserInfo)(nil), // 6: chat.server.v1.ServerUserInfo
+	(*RoomInfo)(nil),        // 0: chat.server.v1.RoomInfo
+	(*RoomInfos)(nil),       // 1: chat.server.v1.RoomInfos
+	(*RoomJoined)(nil),      // 2: chat.server.v1.RoomJoined
+	(*RoomLeft)(nil),        // 3: chat.server.v1.RoomLeft
+	(*RoomUserJoined)(nil),  // 4: chat.server.v1.RoomUserJoined
+	(*RoomUserLeft)(nil),    // 5: chat.server.v1.RoomUserLeft
+	(*RoomGameStarted)(nil), // 6: chat.server.v1.RoomGameStarted
+	(*RoomGameStopped)(nil), // 7: chat.server.v1.RoomGameStopped
+	(*ServerUserInfo)(nil),  // 8: chat.server.v1.ServerUserInfo
 }
 var file_chat_server_v1_room_events_proto_depIdxs = []int32{
 	0, // 0: chat.server.v1.RoomInfos.rooms:type_name -> chat.server.v1.RoomInfo
-	6, // 1: chat.server.v1.RoomJoined.owner:type_name -> chat.server.v1.ServerUserInfo
-	6, // 2: chat.server.v1.RoomJoined.users:type_name -> chat.server.v1.ServerUserInfo
-	6, // 3: chat.server.v1.RoomUserJoined.user:type_name -> chat.server.v1.ServerUserInfo
-	6, // 4: chat.server.v1.RoomUserLeft.user:type_name -> chat.server.v1.ServerUserInfo
+	8, // 1: chat.server.v1.RoomJoined.owner:type_name -> chat.server.v1.ServerUserInfo
+	8, // 2: chat.server.v1.RoomJoined.users:type_name -> chat.server.v1.ServerUserInfo
+	8, // 3: chat.server.v1.RoomUserJoined.user:type_name -> chat.server.v1.ServerUserInfo
+	8, // 4: chat.server.v1.RoomUserLeft.user:type_name -> chat.server.v1.ServerUserInfo
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -380,7 +456,7 @@ func file_chat_server_v1_room_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_server_v1_room_events_proto_rawDesc), len(file_chat_server_v1_room_events_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

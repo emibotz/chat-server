@@ -1,60 +1,36 @@
-package main
+package main_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
+	"testing"
 	"time"
 
 	"github.com/emibotz/chat-server/internal/game"
 	"github.com/emibotz/chat-server/internal/middleware"
 	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/room"
-	"github.com/emibotz/chat-server/internal/store/pgsql"
-	"github.com/emibotz/chat-server/internal/store/redis"
+	"github.com/emibotz/chat-server/internal/store/mock"
 	"github.com/emibotz/chat-server/internal/user"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
 )
 
-func main() {
+func TestMain(t *testing.T) {
 	// 创建根上下文
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	ctx, timeout := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+	defer timeout()
+
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	// 读取环境变量
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
-	// 加载认证配置
-	user.Config.Load()
-	user.Pepper = os.Getenv("AUTH_PEPPER")
-
-	// 创建 Redis 数据库仓库
-	redisAddr := os.Getenv("REDIS_ADDR")
-
-	redisDB, err := redis.New(ctx, redisAddr)
-	if err != nil {
-		panic(err)
-	}
-
-	sessions := redisDB.Sessions()
-
-	// 创建 Postgresql 数据库仓库
-	connString := os.Getenv("CONN_STRING")
-
-	pgsqlDB, err := pgsql.New(ctx, connString)
-	if err != nil {
-		panic(err)
-	}
-
-	users := pgsqlDB.Users()
+	// 创建仓库
+	sessions := mock.SessionStore()
+	users := mock.UserStore()
 
 	// 创建服务
 	userService := user.NewService(sessions, users)
@@ -90,7 +66,7 @@ func main() {
 	e.GET("/ws", wsHandler.Handle, middleware.Auth(userService))
 
 	// 读取服务器监听地址
-	serverAddr := os.Getenv("ADDR")
+	serverAddr := ":5678"
 
 	// 创建 HTTP 服务器
 	server := &http.Server{

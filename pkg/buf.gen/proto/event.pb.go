@@ -32,6 +32,9 @@ type ServerEvent struct {
 	//	*ServerEvent_RoomLeft
 	//	*ServerEvent_RoomUserJoined
 	//	*ServerEvent_RoomUserLeft
+	//	*ServerEvent_RoomGameStarted
+	//	*ServerEvent_RoomGameStopped
+	//	*ServerEvent_ServerTick
 	Data          isServerEvent_Data `protobuf_oneof:"data"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -135,6 +138,33 @@ func (x *ServerEvent) GetRoomUserLeft() *RoomUserLeft {
 	return nil
 }
 
+func (x *ServerEvent) GetRoomGameStarted() *RoomGameStarted {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_RoomGameStarted); ok {
+			return x.RoomGameStarted
+		}
+	}
+	return nil
+}
+
+func (x *ServerEvent) GetRoomGameStopped() *RoomGameStopped {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_RoomGameStopped); ok {
+			return x.RoomGameStopped
+		}
+	}
+	return nil
+}
+
+func (x *ServerEvent) GetServerTick() *ServerTick {
+	if x != nil {
+		if x, ok := x.Data.(*ServerEvent_ServerTick); ok {
+			return x.ServerTick
+		}
+	}
+	return nil
+}
+
 type isServerEvent_Data interface {
 	isServerEvent_Data()
 }
@@ -163,6 +193,18 @@ type ServerEvent_RoomUserLeft struct {
 	RoomUserLeft *RoomUserLeft `protobuf:"bytes,7,opt,name=room_user_left,json=roomUserLeft,oneof"`
 }
 
+type ServerEvent_RoomGameStarted struct {
+	RoomGameStarted *RoomGameStarted `protobuf:"bytes,8,opt,name=room_game_started,json=roomGameStarted,oneof"`
+}
+
+type ServerEvent_RoomGameStopped struct {
+	RoomGameStopped *RoomGameStopped `protobuf:"bytes,9,opt,name=room_game_stopped,json=roomGameStopped,oneof"`
+}
+
+type ServerEvent_ServerTick struct {
+	ServerTick *ServerTick `protobuf:"bytes,10,opt,name=server_tick,json=serverTick,oneof"`
+}
+
 func (*ServerEvent_Error) isServerEvent_Data() {}
 
 func (*ServerEvent_Rooms) isServerEvent_Data() {}
@@ -175,11 +217,17 @@ func (*ServerEvent_RoomUserJoined) isServerEvent_Data() {}
 
 func (*ServerEvent_RoomUserLeft) isServerEvent_Data() {}
 
+func (*ServerEvent_RoomGameStarted) isServerEvent_Data() {}
+
+func (*ServerEvent_RoomGameStopped) isServerEvent_Data() {}
+
+func (*ServerEvent_ServerTick) isServerEvent_Data() {}
+
 var File_chat_server_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\xa1\x03\n" +
+	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a\x19chat/game/v1/server.proto\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\xfc\x04\n" +
 	"\vServerEvent\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x123\n" +
 	"\x05error\x18\x02 \x01(\v2\x1b.chat.server.v1.ServerErrorH\x00R\x05error\x121\n" +
@@ -188,7 +236,12 @@ const file_chat_server_v1_event_proto_rawDesc = "" +
 	"roomJoined\x127\n" +
 	"\troom_left\x18\x05 \x01(\v2\x18.chat.server.v1.RoomLeftH\x00R\broomLeft\x12J\n" +
 	"\x10room_user_joined\x18\x06 \x01(\v2\x1e.chat.server.v1.RoomUserJoinedH\x00R\x0eroomUserJoined\x12D\n" +
-	"\x0eroom_user_left\x18\a \x01(\v2\x1c.chat.server.v1.RoomUserLeftH\x00R\froomUserLeftB\x06\n" +
+	"\x0eroom_user_left\x18\a \x01(\v2\x1c.chat.server.v1.RoomUserLeftH\x00R\froomUserLeft\x12M\n" +
+	"\x11room_game_started\x18\b \x01(\v2\x1f.chat.server.v1.RoomGameStartedH\x00R\x0froomGameStarted\x12M\n" +
+	"\x11room_game_stopped\x18\t \x01(\v2\x1f.chat.server.v1.RoomGameStoppedH\x00R\x0froomGameStopped\x12;\n" +
+	"\vserver_tick\x18\n" +
+	" \x01(\v2\x18.chat.game.v1.ServerTickH\x00R\n" +
+	"serverTickB\x06\n" +
 	"\x04dataB\x83\x01\n" +
 	"\x12com.chat.server.v1B\n" +
 	"EventProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
@@ -207,13 +260,16 @@ func file_chat_server_v1_event_proto_rawDescGZIP() []byte {
 
 var file_chat_server_v1_event_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_chat_server_v1_event_proto_goTypes = []any{
-	(*ServerEvent)(nil),    // 0: chat.server.v1.ServerEvent
-	(*ServerError)(nil),    // 1: chat.server.v1.ServerError
-	(*RoomInfos)(nil),      // 2: chat.server.v1.RoomInfos
-	(*RoomJoined)(nil),     // 3: chat.server.v1.RoomJoined
-	(*RoomLeft)(nil),       // 4: chat.server.v1.RoomLeft
-	(*RoomUserJoined)(nil), // 5: chat.server.v1.RoomUserJoined
-	(*RoomUserLeft)(nil),   // 6: chat.server.v1.RoomUserLeft
+	(*ServerEvent)(nil),     // 0: chat.server.v1.ServerEvent
+	(*ServerError)(nil),     // 1: chat.server.v1.ServerError
+	(*RoomInfos)(nil),       // 2: chat.server.v1.RoomInfos
+	(*RoomJoined)(nil),      // 3: chat.server.v1.RoomJoined
+	(*RoomLeft)(nil),        // 4: chat.server.v1.RoomLeft
+	(*RoomUserJoined)(nil),  // 5: chat.server.v1.RoomUserJoined
+	(*RoomUserLeft)(nil),    // 6: chat.server.v1.RoomUserLeft
+	(*RoomGameStarted)(nil), // 7: chat.server.v1.RoomGameStarted
+	(*RoomGameStopped)(nil), // 8: chat.server.v1.RoomGameStopped
+	(*ServerTick)(nil),      // 9: chat.game.v1.ServerTick
 }
 var file_chat_server_v1_event_proto_depIdxs = []int32{
 	1, // 0: chat.server.v1.ServerEvent.error:type_name -> chat.server.v1.ServerError
@@ -222,11 +278,14 @@ var file_chat_server_v1_event_proto_depIdxs = []int32{
 	4, // 3: chat.server.v1.ServerEvent.room_left:type_name -> chat.server.v1.RoomLeft
 	5, // 4: chat.server.v1.ServerEvent.room_user_joined:type_name -> chat.server.v1.RoomUserJoined
 	6, // 5: chat.server.v1.ServerEvent.room_user_left:type_name -> chat.server.v1.RoomUserLeft
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	7, // 6: chat.server.v1.ServerEvent.room_game_started:type_name -> chat.server.v1.RoomGameStarted
+	8, // 7: chat.server.v1.ServerEvent.room_game_stopped:type_name -> chat.server.v1.RoomGameStopped
+	9, // 8: chat.server.v1.ServerEvent.server_tick:type_name -> chat.game.v1.ServerTick
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_chat_server_v1_event_proto_init() }
@@ -234,6 +293,7 @@ func file_chat_server_v1_event_proto_init() {
 	if File_chat_server_v1_event_proto != nil {
 		return
 	}
+	file_chat_game_v1_server_proto_init()
 	file_chat_server_v1_error_events_proto_init()
 	file_chat_server_v1_room_events_proto_init()
 	file_chat_server_v1_event_proto_msgTypes[0].OneofWrappers = []any{
@@ -243,6 +303,9 @@ func file_chat_server_v1_event_proto_init() {
 		(*ServerEvent_RoomLeft)(nil),
 		(*ServerEvent_RoomUserJoined)(nil),
 		(*ServerEvent_RoomUserLeft)(nil),
+		(*ServerEvent_RoomGameStarted)(nil),
+		(*ServerEvent_RoomGameStopped)(nil),
+		(*ServerEvent_ServerTick)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

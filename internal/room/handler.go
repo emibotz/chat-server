@@ -279,6 +279,157 @@ func (h *handler) leaveRoom(c *network.Context) error {
 	return nil
 }
 
+func (h *handler) startGame(c *network.Context) error {
+
+	// 从上下文中获取用户，应该被用户处理器注入
+	user, ok := c.Value(key.ContextUser).(*user.User)
+
+	// 如果没有用户，返回未认证
+	if !ok {
+		return errcode.SendUnauthorized(c)
+	}
+
+	// 获取用户所在房间
+	room, err := h.roomService.GetRoomByUserID(c, user.ID)
+	if err != nil {
+
+		// 如果用户不在房间中，返回用户不在房间中
+		if errors.Is(err, ErrNotInRoom) {
+			return errcode.SendError(c, errcode.UserNotInRoom)
+		}
+
+		// 否则返回服务器内部错误
+		logger.Error("get room by user id failed", err)
+		return errcode.SendInternalError(c)
+	}
+
+	// 如果用户不是房主，返回用户权限不足
+	if room.Owner != user.ID {
+		return errcode.SendError(c, errcode.InsufficientPermission)
+	}
+
+	// 开始游戏
+	if err := h.roomService.RoomStartGame(c, room); err != nil {
+
+		// 如果游戏已经开始，返回游戏已经开始
+		if errors.Is(err, ErrGameAlreadyStarted) {
+			return errcode.SendError(c, errcode.GameAlreadyStarted)
+		}
+
+		// 否则返回服务器内部错误
+		logger.Error("room start game failed", err)
+		return errcode.SendInternalError(c)
+	}
+
+	// 通过房间内用户 ID 获取对应客户端
+	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
+	if err != nil {
+		logger.Error("get clients by user ids failed", err)
+		return errcode.SendInternalError(c)
+	}
+
+	// 创建事件
+	roomGameStarted := &pbuf.ServerEvent{
+		Data: &pbuf.ServerEvent_RoomGameStarted{
+			RoomGameStarted: &pbuf.RoomGameStarted{},
+		},
+	}
+
+	// 遍历客户端
+	for _, client := range clients {
+
+		// 如果客户端为空，无法发送事件。
+		if client == nil {
+			continue
+		}
+
+		// 发送事件
+		if err := client.SendEvent(roomGameStarted); err != nil {
+
+			// 其他客户端发送失败不应该影响当前客户端连接处理
+			logger.Error("client send roomGameStarted failed", err)
+			continue
+		}
+
+	}
+
+	return nil
+}
+
+func (h *handler) stopGame(c *network.Context) error {
+
+	// 从上下文中获取用户，应该被用户处理器注入
+	user, ok := c.Value(key.ContextUser).(*user.User)
+
+	// 如果没有用户，返回未认证
+	if !ok {
+		return errcode.SendUnauthorized(c)
+	}
+
+	// 通过用户 ID 获取用户所在房间
+	room, err := h.roomService.GetRoomByUserID(c, user.ID)
+	if err != nil {
+
+		// 如果用户不在房间中，返回用户不在房间中
+		if errors.Is(err, ErrNotInRoom) {
+			return errcode.SendError(c, errcode.UserNotInRoom)
+		}
+
+		// 否则返回内部错误
+		logger.Error("get room by user id failed", err)
+		return errcode.SendInternalError(c)
+
+	}
+
+	// 如果用户不是房主，返回权限不足
+	if user.ID != room.Owner {
+		return errcode.SendError(c, errcode.InsufficientPermission)
+	}
+
+	// 如果房间内没有正在进行的游戏，返回游戏未开始
+	if room.Game == nil {
+		return errcode.SendError(c, errcode.GameNotStarted)
+	}
+
+	// 结束游戏
+	room.Game.Stop()
+
+	// 通过房间内用户 ID 获取对应客户端
+	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
+	if err != nil {
+		logger.Error("get clients by user ids failed", err)
+		return errcode.SendInternalError(c)
+	}
+
+	// 创建事件
+	event := &pbuf.ServerEvent{
+		Data: &pbuf.ServerEvent_RoomGameStopped{
+			RoomGameStopped: &pbuf.RoomGameStopped{},
+		},
+	}
+
+	// 遍历客户端
+	for _, client := range clients {
+
+		// 如果客户端为空，无法发送，直接跳过。
+		if client == nil {
+			continue
+		}
+
+		// 发送事件
+		if err := client.SendEvent(event); err != nil {
+			// 单个客户端传输发生错误不应该影响
+			// 其他客户端，打印日志后直接跳过。
+			logger.Error("client send room game stopped failed", err)
+			continue
+
+		}
+
+	}
+
+	return nil
+}
+
 func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
 
 	if getRooms := c.Request.GetGetRooms(); getRooms != nil {
@@ -287,6 +438,10 @@ func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
 		return true, h.joinRoom(c)
 	} else if leaveRoom := c.Request.GetLeaveRoom(); leaveRoom != nil {
 		return true, h.leaveRoom(c)
+	} else if startGame := c.Request.GetStartGame(); startGame != nil {
+		return true, h.startGame(c)
+	} else if stopGame := c.Request.GetStopGame(); stopGame != nil {
+		return true, h.stopGame(c)
 	}
 
 	return false, nil
