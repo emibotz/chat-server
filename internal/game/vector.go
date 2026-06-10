@@ -30,7 +30,7 @@ func (v Vector2) Length() float64 {
 		return 0.0
 	}
 
-	return math.Sqrt(v.X + v.Y)
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
 
 func (v Vector2) Normalized() Vector2 {
