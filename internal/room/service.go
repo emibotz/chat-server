@@ -60,6 +60,11 @@ func (s *Service) CreateRoom(ctx context.Context, creator *user.User) (*Room, er
 	default:
 	}
 
+	// 如果用户已经在某个房间内，返回用户已在房间内
+	if _, ok := s.roomsByUserID[creator.ID]; ok {
+		return nil, ErrAlreadyInRoom
+	}
+
 	// 计算房间号
 	num := s.maxRoomNumber
 	if len(s.freeRoomNumber) > 0 {

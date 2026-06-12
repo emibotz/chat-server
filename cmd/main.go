@@ -152,8 +152,8 @@ func main() {
 
 	// 创建服务
 	slog.Info("Create and configuring services.")
-	gameService := game.NewService()
 	userService := user.NewService(sessions, users)
+	gameService := game.NewService()
 	roomService := room.NewService(userService, gameService)
 
 	// 配置游戏服务使用中间件
@@ -161,14 +161,14 @@ func main() {
 
 	// 创建 HTTP 请求处理器
 	slog.Info("Create HTTP handlers.")
-	gameHandler := game.NewHandler(gameService)
 	userHandler := user.NewHandler(userService)
+	gameHandler := game.NewHandler(gameService)
 	roomHandler := room.NewHandler(userService, roomService)
 
 	// 创建 WebSocket 请求处理器
 	slog.Info("Create WebSocket handlers.")
-	wsHandler.AddHandler(gameHandler)
 	wsHandler.AddHandler(userHandler)
+	wsHandler.AddHandler(gameHandler)
 	wsHandler.AddHandler(roomHandler)
 
 	// 创建路由

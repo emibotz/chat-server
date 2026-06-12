@@ -227,6 +227,9 @@ func (s *Server) Handle(c *echo.Context) error {
 	s.handleClient(ctx, client)
 
 	// 客户端连接关闭，通知客户端处理器
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	closeCtx := network.NewClientCloseContext(ctx, s, client)
 
 	for _, handler := range s.handlers {

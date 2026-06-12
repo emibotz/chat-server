@@ -90,7 +90,7 @@ func (s *MockUserStore) GetByID(ctx context.Context, id uuid.UUID) (*user.User, 
 }
 
 // 通过多个 ID 查询多个用户，返回数量不一定和传入数量相同。
-func (s *MockUserStore) GetByIDs(ctx context.Context, ids ...uuid.UUID) ([]*user.User, error) {
+func (s *MockUserStore) GetsByIDs(ctx context.Context, ids ...uuid.UUID) ([]*user.User, error) {
 
 	result := make([]*user.User, 0)
 

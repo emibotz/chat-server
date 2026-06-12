@@ -3,6 +3,7 @@ package room
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
@@ -25,6 +26,66 @@ func NewHandler(
 		userService: userService,
 		roomService: roomService,
 	}
+}
+
+func (h *handler) createRoom(c *network.ClientRequestContext) error {
+
+	// 从上下文中获取用户，应该被用户处理器提前注入。
+	u, ok := c.Value(key.ContextUser).(*user.User)
+	if !ok {
+		return errcode.SendUnauthorized(c)
+	}
+
+	// 创建房间
+	r, err := h.roomService.CreateRoom(c, u)
+	if err != nil {
+
+		// 如果用户已在房间内，返回用户已在房间内
+		if errors.Is(err, ErrAlreadyInRoom) {
+			return errcode.SendError(c, errcode.UserAlreadyInRoom)
+		}
+
+		// 否则返回内部错误
+		logging.Error("create room failed", err)
+		return errcode.SendInternalError(c)
+
+	}
+
+	id := u.ID.String()
+
+	// 创建房主信息
+	owner := &pbuf.ServerUserInfo{
+		Id:   &id,
+		Name: &u.Name,
+	}
+
+	// 由于这里房间内不应该有任何其他用户，所以直接返回房主信息
+	users := []*pbuf.ServerUserInfo{
+		&pbuf.ServerUserInfo{
+			Id:   &id,
+			Name: &u.Name,
+		},
+	}
+
+	// 创建加入房间事件，发送房间信息
+	event := &pbuf.ServerEvent{
+		Data: &pbuf.ServerEvent_RoomJoined{
+			RoomJoined: &pbuf.RoomJoined{
+				Num:   &r.Num,
+				Name:  &r.Name,
+				Owner: owner,
+				Users: users,
+			},
+		},
+	}
+
+	// 发送事件
+	if err := c.Client.SendEvent(event); err != nil {
+		logging.Error("send room created failed", err)
+		return fmt.Errorf("client send room created failed: %w", err)
+	}
+
+	return nil
 }
 
 func (h *handler) getRooms(c *network.ClientRequestContext) error {
@@ -88,6 +149,11 @@ func (h *handler) joinRoom(c *network.ClientRequestContext) error {
 
 	// 用户加入房间
 	if err := h.roomService.UserJoinRoom(c, room, user); err != nil {
+
+		// 如果用户已在房间内，返回用户已在房间内
+		if errors.Is(err, ErrAlreadyInRoom) {
+			return errcode.SendError(c, errcode.UserAlreadyInRoom)
+		}
 
 		// 如果房间已满，返回房间已满
 		if errors.Is(err, ErrRoomIsFull) {
@@ -418,7 +484,9 @@ func (h *handler) stopGame(c *network.ClientRequestContext) error {
 
 func (h *handler) HandleRequest(c *network.ClientRequestContext) (handled bool, err error) {
 
-	if getRooms := c.Request.GetGetRooms(); getRooms != nil {
+	if createRoom := c.Request.GetCreateRoom(); createRoom != nil {
+		return true, h.createRoom(c)
+	} else if getRooms := c.Request.GetGetRooms(); getRooms != nil {
 		return true, h.getRooms(c)
 	} else if joinRoom := c.Request.GetJoinRoom(); joinRoom != nil {
 		return true, h.joinRoom(c)
@@ -439,6 +507,11 @@ func (h *handler) HandleClose(c *network.ClientCloseContext) {
 	u, ok := c.Value(key.ContextUser).(*user.User)
 	if !ok {
 
+		slog.Info(
+			"found no user, returning.",
+			slog.String("type", fmt.Sprintf("%T", c.Value(key.ContextUser))),
+		)
+
 		// 如果没有用户，无须额外处理，直接返回
 		return
 	}
@@ -452,6 +525,46 @@ func (h *handler) HandleClose(c *network.ClientCloseContext) {
 	// 如果用户不在房间中，无须额外处理，直接返回
 	if r == nil {
 		return
+	}
+
+	// [FIXME] 这里手动广播了一次，是否需要优化呢
+
+	// 获取房间内所有用户对应的客户端
+	clients, err := c.Server.GetClientsByUserIDs(c, r.Users...)
+	if err != nil {
+		logging.Error("get clients by user ids failed", err)
+	}
+
+	// 创建用户退出事件
+	id := u.ID.String()
+
+	userLeft := &pbuf.ServerEvent{
+		Data: &pbuf.ServerEvent_RoomUserLeft{
+			RoomUserLeft: &pbuf.RoomUserLeft{
+				User: &pbuf.ServerUserInfo{
+					Id:   &id,
+					Name: &u.Name,
+				},
+			},
+		},
+	}
+
+	// 遍历所有客户端，发送用户退出事件
+	for userID, client := range clients {
+
+		// 如果客户端为空，那么无法发送事件。
+		// 如果用户 ID 和请求者相同，那么无需发送事件。
+		if client == nil || userID == u.ID {
+			continue
+		}
+
+		// 发送事件
+		if err := client.SendEvent(userLeft); err != nil {
+
+			// 对其他客户端发送失败，不应该影响当前客户端的请求处理。
+			logging.Error("send user left failed", err)
+		}
+
 	}
 
 	// 使用户退出房间

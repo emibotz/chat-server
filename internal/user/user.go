@@ -32,7 +32,7 @@ type Store interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
 
 	// 通过多个 ID 查询多个用户，返回数量不一定和传入数量相同。
-	GetByIDs(ctx context.Context, id ...uuid.UUID) ([]*User, error)
+	GetsByIDs(ctx context.Context, id ...uuid.UUID) ([]*User, error)
 
 	// 通过用户名获取用户，没有指定用户时返回 (nil, nil)
 	GetByName(ctx context.Context, username string) (*User, error)

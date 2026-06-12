@@ -21,6 +21,42 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CreateRoom struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoom) Reset() {
+	*x = CreateRoom{}
+	mi := &file_chat_client_v1_room_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoom) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoom) ProtoMessage() {}
+
+func (x *CreateRoom) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_client_v1_room_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoom.ProtoReflect.Descriptor instead.
+func (*CreateRoom) Descriptor() ([]byte, []int) {
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{0}
+}
+
 type GetRooms struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -29,7 +65,7 @@ type GetRooms struct {
 
 func (x *GetRooms) Reset() {
 	*x = GetRooms{}
-	mi := &file_chat_client_v1_room_proto_msgTypes[0]
+	mi := &file_chat_client_v1_room_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -41,7 +77,7 @@ func (x *GetRooms) String() string {
 func (*GetRooms) ProtoMessage() {}
 
 func (x *GetRooms) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_proto_msgTypes[0]
+	mi := &file_chat_client_v1_room_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54,7 +90,7 @@ func (x *GetRooms) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRooms.ProtoReflect.Descriptor instead.
 func (*GetRooms) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{0}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{1}
 }
 
 type JoinRoom struct {
@@ -66,7 +102,7 @@ type JoinRoom struct {
 
 func (x *JoinRoom) Reset() {
 	*x = JoinRoom{}
-	mi := &file_chat_client_v1_room_proto_msgTypes[1]
+	mi := &file_chat_client_v1_room_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -78,7 +114,7 @@ func (x *JoinRoom) String() string {
 func (*JoinRoom) ProtoMessage() {}
 
 func (x *JoinRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_proto_msgTypes[1]
+	mi := &file_chat_client_v1_room_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -91,7 +127,7 @@ func (x *JoinRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoom.ProtoReflect.Descriptor instead.
 func (*JoinRoom) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{1}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *JoinRoom) GetNum() int64 {
@@ -109,7 +145,7 @@ type LeaveRoom struct {
 
 func (x *LeaveRoom) Reset() {
 	*x = LeaveRoom{}
-	mi := &file_chat_client_v1_room_proto_msgTypes[2]
+	mi := &file_chat_client_v1_room_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +157,7 @@ func (x *LeaveRoom) String() string {
 func (*LeaveRoom) ProtoMessage() {}
 
 func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_proto_msgTypes[2]
+	mi := &file_chat_client_v1_room_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,7 +170,7 @@ func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoom.ProtoReflect.Descriptor instead.
 func (*LeaveRoom) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{2}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{3}
 }
 
 type RoomStartGame struct {
@@ -145,7 +181,7 @@ type RoomStartGame struct {
 
 func (x *RoomStartGame) Reset() {
 	*x = RoomStartGame{}
-	mi := &file_chat_client_v1_room_proto_msgTypes[3]
+	mi := &file_chat_client_v1_room_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -157,7 +193,7 @@ func (x *RoomStartGame) String() string {
 func (*RoomStartGame) ProtoMessage() {}
 
 func (x *RoomStartGame) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_proto_msgTypes[3]
+	mi := &file_chat_client_v1_room_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -170,7 +206,7 @@ func (x *RoomStartGame) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomStartGame.ProtoReflect.Descriptor instead.
 func (*RoomStartGame) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{3}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{4}
 }
 
 type RoomStopGame struct {
@@ -181,7 +217,7 @@ type RoomStopGame struct {
 
 func (x *RoomStopGame) Reset() {
 	*x = RoomStopGame{}
-	mi := &file_chat_client_v1_room_proto_msgTypes[4]
+	mi := &file_chat_client_v1_room_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -193,7 +229,7 @@ func (x *RoomStopGame) String() string {
 func (*RoomStopGame) ProtoMessage() {}
 
 func (x *RoomStopGame) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_client_v1_room_proto_msgTypes[4]
+	mi := &file_chat_client_v1_room_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -206,14 +242,16 @@ func (x *RoomStopGame) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomStopGame.ProtoReflect.Descriptor instead.
 func (*RoomStopGame) Descriptor() ([]byte, []int) {
-	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{4}
+	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{5}
 }
 
 var File_chat_client_v1_room_proto protoreflect.FileDescriptor
 
 const file_chat_client_v1_room_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/client/v1/room.proto\x12\x0echat.client.v1\"\n" +
+	"\x19chat/client/v1/room.proto\x12\x0echat.client.v1\"\f\n" +
+	"\n" +
+	"CreateRoom\"\n" +
 	"\n" +
 	"\bGetRooms\"\x1c\n" +
 	"\bJoinRoom\x12\x10\n" +
@@ -235,13 +273,14 @@ func file_chat_client_v1_room_proto_rawDescGZIP() []byte {
 	return file_chat_client_v1_room_proto_rawDescData
 }
 
-var file_chat_client_v1_room_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_chat_client_v1_room_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_chat_client_v1_room_proto_goTypes = []any{
-	(*GetRooms)(nil),      // 0: chat.client.v1.GetRooms
-	(*JoinRoom)(nil),      // 1: chat.client.v1.JoinRoom
-	(*LeaveRoom)(nil),     // 2: chat.client.v1.LeaveRoom
-	(*RoomStartGame)(nil), // 3: chat.client.v1.RoomStartGame
-	(*RoomStopGame)(nil),  // 4: chat.client.v1.RoomStopGame
+	(*CreateRoom)(nil),    // 0: chat.client.v1.CreateRoom
+	(*GetRooms)(nil),      // 1: chat.client.v1.GetRooms
+	(*JoinRoom)(nil),      // 2: chat.client.v1.JoinRoom
+	(*LeaveRoom)(nil),     // 3: chat.client.v1.LeaveRoom
+	(*RoomStartGame)(nil), // 4: chat.client.v1.RoomStartGame
+	(*RoomStopGame)(nil),  // 5: chat.client.v1.RoomStopGame
 }
 var file_chat_client_v1_room_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -262,7 +301,7 @@ func file_chat_client_v1_room_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_client_v1_room_proto_rawDesc), len(file_chat_client_v1_room_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

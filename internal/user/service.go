@@ -167,5 +167,5 @@ func (s *Service) GetUserByID(ctx context.Context, userID uuid.UUID) (*User, err
 
 // [TODO] 是否需要处理结果？
 func (s *Service) GetUsersByIDs(ctx context.Context, userIDs ...uuid.UUID) ([]*User, error) {
-	return s.users.GetByIDs(ctx, userIDs...)
+	return s.users.GetsByIDs(ctx, userIDs...)
 }
