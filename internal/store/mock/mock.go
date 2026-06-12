@@ -50,6 +50,17 @@ func (s *MockSessionStore) Delete(ctx context.Context, token string) error {
 	return nil
 }
 
+func (s *MockSessionStore) DeleteAllByUserID(ctx context.Context, userID uuid.UUID) error {
+
+	for session, id := range s.sessions {
+		if id == userID.String() {
+			delete(s.sessions, session)
+		}
+	}
+
+	return nil
+}
+
 type MockUserStore struct {
 	users     []*user.User
 	usersByID map[uuid.UUID]*user.User

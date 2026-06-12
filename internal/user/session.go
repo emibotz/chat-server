@@ -17,4 +17,5 @@ type SessionStore interface {
 	RefreshTTL(ctx context.Context, token string, ttl time.Duration) error
 
 	Delete(ctx context.Context, token string) error
+	DeleteAllByUserID(ctx context.Context, userID uuid.UUID) error
 }
