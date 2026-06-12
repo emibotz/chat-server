@@ -125,15 +125,18 @@ func (s *Service) Login(ctx context.Context, username string, password string) (
 		return "", ErrUserNotExist
 	}
 
-	// 验证密码
+	// 验证密码，如果不通过直接返回错误
 	if err := VerifyPasswordWithAuth(password, u.Auth); err != nil {
 		return "", err
 	}
 
+	// 如果已有会话，将其删除
+	s.sessions.DeleteAllByUserID(ctx, u.ID)
+
 	// 创建会话，持续 1 小时
 	token, err := s.sessions.Create(ctx, u.ID, 1*time.Hour)
 	if err != nil {
-		return "", fmt.Errorf("create session failed: %w", err)
+		return "", fmt.Errorf("sessions create failed: %w", err)
 	}
 
 	return token, nil

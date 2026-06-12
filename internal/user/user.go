@@ -2,8 +2,13 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrUserAlreadyExist = fmt.Errorf("user already exist.")
 )
 
 type User struct {
