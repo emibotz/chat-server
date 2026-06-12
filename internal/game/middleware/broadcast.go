@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/emibotz/chat-server/internal/game"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +18,7 @@ func Broadcast(broadcaster game.Broadcaster) game.TickMiddleware {
 			if tickErr != nil {
 
 				// 游戏刻发生错误但没有 panic ，尝试继续处理。
-				logger.Error("broadcast: error occurred when ticking game, still trying to broadcast.", tickErr)
+				logging.Error("broadcast: error occurred when ticking game, still trying to broadcast.", tickErr)
 			}
 
 			// 初始化服务器刻事件

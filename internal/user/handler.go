@@ -8,7 +8,7 @@ import (
 	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/key"
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/emibotz/chat-server/pkg/response"
 	"github.com/labstack/echo/v5"
 )
@@ -44,7 +44,7 @@ func (h *handler) HandleWS(c *network.Context) (bool, error) {
 	// 通过客户端中维护的用户 ID 获取用户
 	user, err := h.service.GetUserByID(c, c.Client.GetUserID())
 	if err != nil {
-		logger.Error("get user by id failed", err)
+		logging.Error("get user by id failed", err)
 		return true, errcode.SendInternalError(c)
 	}
 
@@ -70,6 +70,12 @@ func (h *handler) Register(c *echo.Context) error {
 
 	token, err := h.service.Register(ctx, req.Username, req.Password)
 	if err != nil {
+
+		// 处理用户重复错误
+		if errors.Is(err, ErrUserDuplicated) {
+			return response.HTTPFail(c, http.StatusConflict, -1, err)
+		}
+
 		// 处理用户名或密码格式错误
 		if errors.Is(err, ErrInvalidUsername) || errors.Is(err, ErrInvalidPassword) {
 			return response.HTTPFail(c, http.StatusBadRequest, -1, err)
@@ -79,7 +85,7 @@ func (h *handler) Register(c *echo.Context) error {
 
 	}
 
-	return response.HTTPSuccess(c, http.StatusCreated, 0, "user registered", registerResponse{Token: token})
+	return response.HTTPSuccess(c, http.StatusCreated, 0, "user registered.", registerResponse{Token: token})
 }
 
 func (h *handler) Login(c *echo.Context) error {

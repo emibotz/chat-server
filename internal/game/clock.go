@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/google/uuid"
 )
 
@@ -134,7 +134,7 @@ tickLoop:
 
 		// 如果时钟被关闭，退出循环
 		case <-c.ctx.Done():
-			logger.Error("clock: context is done, stopping...", c.ctx.Err())
+			logging.Error("clock: context is done, stopping...", c.ctx.Err())
 			break tickLoop
 
 		// 等待计时器

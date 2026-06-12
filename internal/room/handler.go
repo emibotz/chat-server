@@ -9,7 +9,7 @@ import (
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/key"
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 )
 
 type handler struct {
@@ -84,7 +84,7 @@ func (h *handler) joinRoom(c *network.Context) error {
 		}
 
 		// 返回服务器内部错误
-		logger.Error("get room by num failed", err)
+		logging.Error("get room by num failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -97,14 +97,14 @@ func (h *handler) joinRoom(c *network.Context) error {
 		}
 
 		// 返回服务器内部错误
-		logger.Error("user join room failed", err)
+		logging.Error("user join room failed", err)
 		return errcode.SendInternalError(c)
 	}
 
 	// 获取房间内所有用户对应的客户端
 	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
 	if err != nil {
-		logger.Error("get clients by user ids failed", err)
+		logging.Error("get clients by user ids failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -135,7 +135,7 @@ func (h *handler) joinRoom(c *network.Context) error {
 		if err := client.SendEvent(userJoined); err != nil {
 
 			// 对其他客户端发送失败，不应该影响当前客户端的请求处理。
-			logger.Error("send user joined event to client failed", err)
+			logging.Error("send user joined event to client failed", err)
 		}
 
 	}
@@ -143,7 +143,7 @@ func (h *handler) joinRoom(c *network.Context) error {
 	// 获取房间内用户信息
 	users, err := h.userService.GetUsersByIDs(c, room.Users...)
 	if err != nil {
-		logger.Error("get users by ids failed", err)
+		logging.Error("get users by ids failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -209,7 +209,7 @@ func (h *handler) leaveRoom(c *network.Context) error {
 		}
 
 		// 否则返回服务器内部错误
-		logger.Error("get room by user id failed", err)
+		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -222,14 +222,14 @@ func (h *handler) leaveRoom(c *network.Context) error {
 		}
 
 		// 否则返回服务器内部错误
-		logger.Error("user leave room failed", err)
+		logging.Error("user leave room failed", err)
 		return errcode.SendInternalError(c)
 	}
 
 	// 获取房间内所有用户对应的客户端
 	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
 	if err != nil {
-		logger.Error("get clients by user ids failed", err)
+		logging.Error("get clients by user ids failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -260,7 +260,7 @@ func (h *handler) leaveRoom(c *network.Context) error {
 		if err := client.SendEvent(userLeft); err != nil {
 
 			// 对其他客户端发送失败，不应该影响当前客户端的请求处理。
-			logger.Error("send user left failed", err)
+			logging.Error("send user left failed", err)
 		}
 
 	}
@@ -299,7 +299,7 @@ func (h *handler) startGame(c *network.Context) error {
 		}
 
 		// 否则返回服务器内部错误
-		logger.Error("get room by user id failed", err)
+		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -317,14 +317,14 @@ func (h *handler) startGame(c *network.Context) error {
 		}
 
 		// 否则返回服务器内部错误
-		logger.Error("room start game failed", err)
+		logging.Error("room start game failed", err)
 		return errcode.SendInternalError(c)
 	}
 
 	// 通过房间内用户 ID 获取对应客户端
 	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
 	if err != nil {
-		logger.Error("get clients by user ids failed", err)
+		logging.Error("get clients by user ids failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -347,7 +347,7 @@ func (h *handler) startGame(c *network.Context) error {
 		if err := client.SendEvent(roomGameStarted); err != nil {
 
 			// 其他客户端发送失败不应该影响当前客户端连接处理
-			logger.Error("client send roomGameStarted failed", err)
+			logging.Error("client send roomGameStarted failed", err)
 			continue
 		}
 
@@ -376,7 +376,7 @@ func (h *handler) stopGame(c *network.Context) error {
 		}
 
 		// 否则返回内部错误
-		logger.Error("get room by user id failed", err)
+		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
 
 	}
@@ -397,7 +397,7 @@ func (h *handler) stopGame(c *network.Context) error {
 	// 通过房间内用户 ID 获取对应客户端
 	clients, err := c.Server.GetClientsByUserIDs(c, room.Users...)
 	if err != nil {
-		logger.Error("get clients by user ids failed", err)
+		logging.Error("get clients by user ids failed", err)
 		return errcode.SendInternalError(c)
 	}
 
@@ -420,7 +420,7 @@ func (h *handler) stopGame(c *network.Context) error {
 		if err := client.SendEvent(event); err != nil {
 			// 单个客户端传输发生错误不应该影响
 			// 其他客户端，打印日志后直接跳过。
-			logger.Error("client send room game stopped failed", err)
+			logging.Error("client send room game stopped failed", err)
 			continue
 
 		}

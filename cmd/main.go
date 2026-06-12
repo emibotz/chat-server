@@ -19,23 +19,59 @@ import (
 	"github.com/emibotz/chat-server/internal/store/pgsql"
 	"github.com/emibotz/chat-server/internal/store/valkey"
 	"github.com/emibotz/chat-server/internal/user"
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
 )
 
+const (
+	// 所有者权限
+	OwnerRead  = 0400
+	OwnerWrite = 0200
+	OwnerExec  = 0100
+
+	// 组权限
+	GroupRead  = 0040
+	GroupWrite = 0020
+	GroupExec  = 0010
+
+	// 其他用户权限
+	OtherRead  = 0004
+	OtherWrite = 0002
+	OtherExec  = 0001
+)
+
 func main() {
 
-	// 创建请求处理器
-	e := echo.New()
-	e.Use(echoMiddleware.RequestLogger())
-	e.Use(echoMiddleware.Recover())
+	// 所有用户可读可写，不可执行
+	filePerm := OwnerRead | OwnerWrite | GroupRead | GroupWrite | OtherRead | OtherWrite
 
-	wsHandler := network.NewServer()
+	// 创建日志文件
+	logFile, err := os.OpenFile("log.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.FileMode(filePerm))
+	if err != nil {
+		panic(err)
+	}
+	defer logFile.Close()
 
-	// 设置结构化日志
-	slog.SetDefault(e.Logger)
+	// 创建控制台日志处理器
+	consoleHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     slog.LevelInfo,
+	})
+
+	// 创建日志文件处理器
+	jsonHandler := slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	})
+
+	// 组合为多处理器
+	multiHandler := logging.NewMultiHandler(consoleHandler, jsonHandler)
+
+	// 创建日志器，并设置为默认结构化日志器
+	logger := slog.New(multiHandler)
+	slog.SetDefault(logger)
 
 	// 创建根上下文
 	slog.Info("Create and notify context.")
@@ -52,6 +88,14 @@ func main() {
 	slog.Info("Load auth configs.")
 	user.Config.Load()
 	user.Pepper = os.Getenv("AUTH_PEPPER")
+
+	// 创建请求处理器
+	e := echo.New()
+	e.Logger = logger
+	e.Use(echoMiddleware.RequestLogger())
+	e.Use(echoMiddleware.Recover())
+
+	wsHandler := network.NewServer()
 
 	// 创建 Redis 数据库仓库
 	// redisAddr := os.Getenv("REDIS_ADDR")
@@ -157,7 +201,7 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Error("error occurred when shutting down server", err)
+		logging.Error("error occurred when shutting down server", err)
 	}
 
 	slog.Info("Server is down.")

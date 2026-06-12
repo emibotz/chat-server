@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
-	"github.com/emibotz/chat-server/pkg/logger"
+	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +24,7 @@ func (b *ServerBroadcaster) Broadcast(ctx context.Context, tick *pbuf.ServerTick
 	// 获取所有用户 ID 对应的客户端
 	clients, err := b.server.GetClientsByUserIDs(ctx, userIDs...)
 	if err != nil {
-		logger.Error("broadcast failed", err)
+		logging.Error("broadcast failed", err)
 	}
 
 	// 创建事件
@@ -46,7 +46,7 @@ func (b *ServerBroadcaster) Broadcast(ctx context.Context, tick *pbuf.ServerTick
 		if err := client.SendEvent(event); err != nil {
 
 			// 单个客户端广播失败不应该影响其他客户端的事件广播
-			logger.Error("client broadcast serverTick failed", err)
+			logging.Error("client broadcast serverTick failed", err)
 			continue
 		}
 
