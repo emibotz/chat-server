@@ -1,4 +1,4 @@
-package network
+package websocket
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/key"
+	"github.com/emibotz/chat-server/pkg/network"
 	"github.com/emibotz/chat-server/pkg/response"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -25,7 +26,7 @@ type Server struct {
 
 	wsUpgrader *websocket.Upgrader
 
-	handlers []ClientRequestHandler
+	handlers []network.ClientHandler
 
 	clients         []*Client
 	clientsByUserID map[uuid.UUID]*Client
@@ -51,7 +52,7 @@ func NewServer() *Server {
 }
 
 // 添加处理器
-func (s *Server) HandleFunc(handler ClientRequestHandler) {
+func (s *Server) AddHandler(handler network.ClientHandler) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -83,7 +84,7 @@ func (s *Server) removeClient(client *Client) error {
 }
 
 // 通过用户 ID 找到对应的客户端连接
-func (s *Server) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*Client, error) {
+func (s *Server) GetClientByUserID(ctx context.Context, userID uuid.UUID) (network.Client, error) {
 	// 给服务器加锁，防止竞态
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -107,9 +108,9 @@ func (s *Server) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*Clie
 	return c, nil
 }
 
-// 通过多个用户 ID 找到对应的客户端连接，返回 map[uuid.UUID\]*Client
+// 通过多个用户 ID 找到对应的客户端连接，返回 [map[uuid.UUID]*Client] 。
 // 当没有找到某个用户对应的客户端时，在表中对应值为空指针，需要自行检查。
-func (s *Server) GetClientsByUserIDs(ctx context.Context, userIDs ...uuid.UUID) (map[uuid.UUID]*Client, error) {
+func (s *Server) GetClientsByUserIDs(ctx context.Context, userIDs ...uuid.UUID) (map[uuid.UUID]network.Client, error) {
 	// 给服务器加速，防止竞态。
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -122,7 +123,7 @@ func (s *Server) GetClientsByUserIDs(ctx context.Context, userIDs ...uuid.UUID) 
 	}
 
 	// 创建表
-	result := make(map[uuid.UUID]*Client)
+	result := make(map[uuid.UUID]network.Client)
 
 	// 遍历寻找客户端
 	for _, userID := range userIDs {
@@ -169,20 +170,14 @@ func (s *Server) handleClient(ctx context.Context, client *Client) error {
 
 		// 创建请求上下文
 		ctx, done := context.WithCancel(ctx)
-
-		c := Context{
-			Context: ctx,
-			Server:  s,
-			Client:  client,
-			Request: &request,
-		}
+		requestContext := network.NewClientRequestContext(ctx, s, client, &request)
 
 		// 把请求上下文分发给客户端请求处理器
 	handling:
-		for _, handle := range s.handlers {
+		for _, handler := range s.handlers {
 
 			// 处理请求上下文
-			handled, err := handle(&c)
+			handled, err := handler.HandleRequest(requestContext)
 
 			// 如果处理器返回错误，直接将其返回，由上游函数处理
 			if err != nil {
@@ -220,20 +215,23 @@ func (s *Server) Handle(c *echo.Context) error {
 	defer conn.Close()
 
 	// 创建客户端
-	client := Client{
+	client := &Client{
 		userID: id,
 		wsConn: conn,
 	}
 
 	// 将客户端添加到列表中并建立键值连接
-	s.addClient(&client)
+	s.addClient(client)
 
 	// 处理客户端请求
-	if err := s.handleClient(ctx, &client); err != nil {
-		return response.InternalServerError(c, err)
-	}
+	s.handleClient(ctx, client)
 
-	// [TODO] 客户端处理结束，应该通知 RoomService 和 GameService 清理用户状态
+	// 客户端连接关闭，通知客户端处理器
+	closeCtx := network.NewClientCloseContext(ctx, s, client)
+
+	for _, handler := range s.handlers {
+		handler.HandleClose(closeCtx)
+	}
 
 	// 如果客户端没有返回错误，返回空值？？？
 	// 我看到 Echo 官方示例中这样做，所以也许

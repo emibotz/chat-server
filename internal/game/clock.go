@@ -14,12 +14,6 @@ type TickHandler func(ctx *TickContext) error
 type TickMiddleware func(ctx *TickContext, tick TickHandler) TickHandler
 type TickMiddlewareFactory func(g *Game) TickMiddleware
 
-func AlwaysUse(middleware TickMiddleware) TickMiddlewareFactory {
-	return func(g *Game) TickMiddleware {
-		return middleware
-	}
-}
-
 type TickContext struct {
 	context.Context
 

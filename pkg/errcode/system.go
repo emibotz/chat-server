@@ -1,6 +1,6 @@
 package errcode
 
-import "github.com/emibotz/chat-server/internal/network"
+import "github.com/emibotz/chat-server/pkg/network"
 
 var (
 	// 未认证
@@ -13,10 +13,10 @@ var (
 	IncompatibleVersion = NewError(SystemAPI, 03, "incompatible version.")
 )
 
-func SendUnauthorized(c *network.Context) error {
+func SendUnauthorized(c *network.ClientRequestContext) error {
 	return SendError(c, Unauthorized)
 }
 
-func SendInternalError(c *network.Context) error {
+func SendInternalError(c *network.ClientRequestContext) error {
 	return SendError(c, InternalError)
 }

@@ -1,11 +1,11 @@
 package game
 
 import (
-	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/user"
 	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/emibotz/chat-server/pkg/logging"
+	"github.com/emibotz/chat-server/pkg/network"
 )
 
 type handler struct {
@@ -20,7 +20,7 @@ func NewHandler(
 	}
 }
 
-func (h *handler) move(c *network.Context) error {
+func (h *handler) move(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该在用户处理器中注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -54,7 +54,7 @@ func (h *handler) move(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) chat(c *network.Context) error {
+func (h *handler) chat(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该在用户处理器中注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -88,7 +88,7 @@ func (h *handler) chat(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
+func (h *handler) HandleRequest(c *network.ClientRequestContext) (handled bool, err error) {
 
 	if gameRequest := c.Request.GetGameRequest(); gameRequest != nil {
 
@@ -102,3 +102,5 @@ func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
 
 	return false, nil
 }
+
+func (h *handler) HandleClose(c *network.ClientCloseContext) {}

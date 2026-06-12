@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/user"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/emibotz/chat-server/pkg/errcode"
 	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/emibotz/chat-server/pkg/logging"
+	"github.com/emibotz/chat-server/pkg/network"
 )
 
 type handler struct {
@@ -27,7 +27,7 @@ func NewHandler(
 	}
 }
 
-func (h *handler) getRooms(c *network.Context) error {
+func (h *handler) getRooms(c *network.ClientRequestContext) error {
 
 	// 查询房间
 	rooms, err := h.roomService.GetRooms(c)
@@ -62,7 +62,7 @@ func (h *handler) getRooms(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) joinRoom(c *network.Context) error {
+func (h *handler) joinRoom(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该被用户处理器注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -77,15 +77,13 @@ func (h *handler) joinRoom(c *network.Context) error {
 
 	room, err := h.roomService.GetRoomByNum(c, num)
 	if err != nil {
-
-		// 如果房间不存在，返回房间不存在
-		if errors.Is(err, ErrRoomNotExist) {
-			return errcode.SendError(c, errcode.RoomNotFound)
-		}
-
-		// 返回服务器内部错误
 		logging.Error("get room by num failed", err)
 		return errcode.SendInternalError(c)
+	}
+
+	// 如果没有房间，返回房间不存在
+	if room == nil {
+		return errcode.SendError(c, errcode.RoomNotFound)
 	}
 
 	// 用户加入房间
@@ -189,7 +187,7 @@ func (h *handler) joinRoom(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) leaveRoom(c *network.Context) error {
+func (h *handler) leaveRoom(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该被用户处理器注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -202,25 +200,18 @@ func (h *handler) leaveRoom(c *network.Context) error {
 	// 通过用户 ID 获取用户所在房间
 	room, err := h.roomService.GetRoomByUserID(c, user.ID)
 	if err != nil {
-
-		// 如果用户不在房间中，返回用户不在房间中
-		if errors.Is(err, ErrNotInRoom) {
-			return errcode.SendError(c, errcode.UserNotInRoom)
-		}
-
 		// 否则返回服务器内部错误
 		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
 	}
 
+	// 如果没有房间，返回用户不在房间中
+	if room == nil {
+		return errcode.SendError(c, errcode.UserNotInRoom)
+	}
+
 	// 用户退出房间
 	if err := h.roomService.UserLeaveRoom(c, room, user); err != nil {
-
-		// 如果用户不在房间中，返回用户不在房间中
-		if errors.Is(err, ErrNotInRoom) {
-			return errcode.SendError(c, errcode.UserNotInRoom)
-		}
-
 		// 否则返回服务器内部错误
 		logging.Error("user leave room failed", err)
 		return errcode.SendInternalError(c)
@@ -279,7 +270,7 @@ func (h *handler) leaveRoom(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) startGame(c *network.Context) error {
+func (h *handler) startGame(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该被用户处理器注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -292,15 +283,13 @@ func (h *handler) startGame(c *network.Context) error {
 	// 获取用户所在房间
 	room, err := h.roomService.GetRoomByUserID(c, user.ID)
 	if err != nil {
-
-		// 如果用户不在房间中，返回用户不在房间中
-		if errors.Is(err, ErrNotInRoom) {
-			return errcode.SendError(c, errcode.UserNotInRoom)
-		}
-
-		// 否则返回服务器内部错误
 		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
+	}
+
+	// 如果没有房间，返回用户不在房间中
+	if room == nil {
+		return errcode.SendError(c, errcode.UserNotInRoom)
 	}
 
 	// 如果用户不是房主，返回用户权限不足
@@ -356,7 +345,7 @@ func (h *handler) startGame(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) stopGame(c *network.Context) error {
+func (h *handler) stopGame(c *network.ClientRequestContext) error {
 
 	// 从上下文中获取用户，应该被用户处理器注入
 	user, ok := c.Value(key.ContextUser).(*user.User)
@@ -369,16 +358,13 @@ func (h *handler) stopGame(c *network.Context) error {
 	// 通过用户 ID 获取用户所在房间
 	room, err := h.roomService.GetRoomByUserID(c, user.ID)
 	if err != nil {
-
-		// 如果用户不在房间中，返回用户不在房间中
-		if errors.Is(err, ErrNotInRoom) {
-			return errcode.SendError(c, errcode.UserNotInRoom)
-		}
-
-		// 否则返回内部错误
 		logging.Error("get room by user id failed", err)
 		return errcode.SendInternalError(c)
+	}
 
+	// 如果没有房间，返回用户不在房间中
+	if room == nil {
+		return errcode.SendError(c, errcode.UserNotInRoom)
 	}
 
 	// 如果用户不是房主，返回权限不足
@@ -430,7 +416,7 @@ func (h *handler) stopGame(c *network.Context) error {
 	return nil
 }
 
-func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
+func (h *handler) HandleRequest(c *network.ClientRequestContext) (handled bool, err error) {
 
 	if getRooms := c.Request.GetGetRooms(); getRooms != nil {
 		return true, h.getRooms(c)
@@ -445,4 +431,32 @@ func (h *handler) HandleWS(c *network.Context) (handled bool, err error) {
 	}
 
 	return false, nil
+}
+
+func (h *handler) HandleClose(c *network.ClientCloseContext) {
+
+	// 从上下文中获取用户，应该被认证处理器提前注入
+	u, ok := c.Value(key.ContextUser).(*user.User)
+	if !ok {
+
+		// 如果没有用户，无须额外处理，直接返回
+		return
+	}
+
+	// 通过用户 ID 获取用户所在房间
+	r, err := h.roomService.GetRoomByUserID(c, c.Client.GetUserID())
+	if err != nil {
+		logging.Error("get room by user id failed", err)
+	}
+
+	// 如果用户不在房间中，无须额外处理，直接返回
+	if r == nil {
+		return
+	}
+
+	// 使用户退出房间
+	if err := h.roomService.UserLeaveRoom(c, r, u); err != nil {
+		logging.Error("user leave room failed", err)
+	}
+
 }

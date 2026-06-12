@@ -14,11 +14,11 @@ import (
 	"github.com/emibotz/chat-server/internal/game"
 	tickMiddleware "github.com/emibotz/chat-server/internal/game/middleware"
 	"github.com/emibotz/chat-server/internal/middleware"
-	"github.com/emibotz/chat-server/internal/network"
 	"github.com/emibotz/chat-server/internal/room"
 	"github.com/emibotz/chat-server/internal/store/pgsql"
 	"github.com/emibotz/chat-server/internal/store/valkey"
 	"github.com/emibotz/chat-server/internal/user"
+	"github.com/emibotz/chat-server/internal/websocket"
 	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
@@ -54,7 +54,7 @@ func main() {
 	logFileName := fmt.Sprintf("%s/%s.log", logFileDir, today)
 	latestLogFileName := fmt.Sprintf("%s/%s", logFileDir, "latest.log")
 
-	if err := os.Mkdir(logFileDir, os.FileMode(dirPerm)); err != nil {
+	if err := os.Mkdir(logFileDir, os.FileMode(dirPerm)); err != nil && !errors.Is(err, os.ErrExist) {
 		panic(err)
 	}
 
@@ -116,7 +116,7 @@ func main() {
 	e.Use(echoMiddleware.RequestLogger())
 	e.Use(echoMiddleware.Recover())
 
-	wsHandler := network.NewServer()
+	wsHandler := websocket.NewServer()
 
 	// 创建 Redis 数据库仓库
 	// redisAddr := os.Getenv("REDIS_ADDR")
@@ -157,7 +157,7 @@ func main() {
 	roomService := room.NewService(userService, gameService)
 
 	// 配置游戏服务使用中间件
-	gameService.AddMiddlewareFactory(game.AlwaysUse(tickMiddleware.Broadcast(wsHandler.Broadcaster())))
+	gameService.AddMiddlewareFactory(tickMiddleware.Broadcast(wsHandler))
 
 	// 创建 HTTP 请求处理器
 	slog.Info("Create HTTP handlers.")
@@ -167,9 +167,9 @@ func main() {
 
 	// 创建 WebSocket 请求处理器
 	slog.Info("Create WebSocket handlers.")
-	wsHandler.HandleFunc(gameHandler.HandleWS)
-	wsHandler.HandleFunc(userHandler.HandleWS)
-	wsHandler.HandleFunc(roomHandler.HandleWS)
+	wsHandler.AddHandler(gameHandler)
+	wsHandler.AddHandler(userHandler)
+	wsHandler.AddHandler(roomHandler)
 
 	// 创建路由
 	slog.Info("Create routes.")

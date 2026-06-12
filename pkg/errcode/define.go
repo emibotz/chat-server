@@ -1,8 +1,8 @@
 package errcode
 
 import (
-	"github.com/emibotz/chat-server/internal/network"
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
+	"github.com/emibotz/chat-server/pkg/network"
 )
 
 // 这个包专为 WebSocket 请求准备
@@ -39,7 +39,7 @@ func NewEvent(e *pbuf.ServerError) *pbuf.ServerEvent {
 	}
 }
 
-func SendError(c *network.Context, err *pbuf.ServerError) error {
+func SendError(c *network.ClientRequestContext, err *pbuf.ServerError) error {
 	if err := c.Client.SendEvent(NewEvent(err)); err != nil {
 		return err
 	}

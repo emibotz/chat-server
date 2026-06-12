@@ -12,12 +12,8 @@ import (
 )
 
 var (
-	ErrRoomNotExist = fmt.Errorf("room does not exist.")
-
 	ErrAlreadyInRoom = fmt.Errorf("user is already in this room.")
 	ErrRoomIsFull    = fmt.Errorf("this room is full.")
-
-	ErrNotInRoom = fmt.Errorf("user is not in this room.")
 
 	ErrGameAlreadyStarted = fmt.Errorf("game is already started.")
 	ErrGameNotStarted     = fmt.Errorf("game is not started.")
@@ -114,7 +110,7 @@ func (s *Service) GetRoomByNum(ctx context.Context, num int64) (*Room, error) {
 	// 查询房间
 	r, ok := s.roomsByNum[num]
 	if !ok {
-		return nil, ErrRoomNotExist
+		return nil, nil
 	}
 
 	return r, nil
@@ -133,13 +129,13 @@ func (s *Service) GetRoomByUserID(ctx context.Context, userID uuid.UUID) (*Room,
 	// 查询房间
 	r, ok := s.roomsByUserID[userID]
 	if !ok {
-		return nil, ErrNotInRoom
+		return nil, nil
 	}
 
 	return r, nil
 }
 
-func (s *Service) UserJoinRoom(ctx context.Context, room *Room, user *user.User) error {
+func (s *Service) UserJoinRoom(ctx context.Context, r *Room, u *user.User) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -150,16 +146,26 @@ func (s *Service) UserJoinRoom(ctx context.Context, room *Room, user *user.User)
 	}
 
 	// 如果当前用户已经在某个房间内，或房间里已经有当前用户，返回用户已经在房间里
-	_, ok := s.roomsByUserID[user.ID]
+	_, ok := s.roomsByUserID[u.ID]
 
-	if ok || slices.Contains(room.Users, user.ID) {
+	if ok || slices.Contains(r.Users, u.ID) {
 		return ErrAlreadyInRoom
 	}
 
 	// 把玩家添加进房间中，并且建立联系
-	room.Users = append(room.Users, user.ID)
+	r.Users = append(r.Users, u.ID)
 
-	s.roomsByUserID[user.ID] = room
+	s.roomsByUserID[u.ID] = r
+
+	// 如果房间中没有正在进行中的游戏，可以就此返回。
+	if r.Game == nil {
+		return nil
+	}
+
+	// 使用户加入进行中的游戏。
+	if err := s.gameService.UserJoinGame(ctx, r.Game, u); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -184,7 +190,7 @@ func (s *Service) deleteRoom(room *Room) {
 	s.freeRoomNumber = append(s.freeRoomNumber, room.Num)
 }
 
-func (s *Service) UserLeaveRoom(ctx context.Context, room *Room, user *user.User) error {
+func (s *Service) UserLeaveRoom(ctx context.Context, r *Room, u *user.User) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -195,23 +201,33 @@ func (s *Service) UserLeaveRoom(ctx context.Context, room *Room, user *user.User
 	}
 
 	// 如果用户是房主，使房间内所有用户退出房间，然后删除房间
-	if room.Owner == user.ID {
-		s.deleteRoom(room)
+	if r.Owner == u.ID {
+		s.deleteRoom(r)
 		return nil
 	}
 
 	// 获取用户在房间中的索引
-	i := slices.Index(room.Users, user.ID)
+	i := slices.Index(r.Users, u.ID)
 
 	// 如果玩家不在房间中，返回用户不在房间中
 	if i < 0 {
-		return ErrNotInRoom
+		return nil
 	}
 
 	// 把用户从房间中移除，并且删除联系
-	room.Users = append(room.Users[:i], room.Users[i+1:]...)
+	r.Users = append(r.Users[:i], r.Users[i+1:]...)
 
-	delete(s.roomsByUserID, user.ID)
+	delete(s.roomsByUserID, u.ID)
+
+	// 如果房间中没有正在进行的游戏，可以就此返回。
+	if r.Game == nil {
+		return nil
+	}
+
+	// 使用户退出正在进行中的游戏。
+	if err := s.gameService.UserLeaveGame(ctx, r.Game, u); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -231,9 +247,9 @@ func (s *Service) DeleteRoom(ctx context.Context, room *Room) error {
 	return nil
 }
 
-func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
-	room.mu.Lock()
-	defer room.mu.Unlock()
+func (s *Service) RoomStartGame(ctx context.Context, r *Room) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	select {
 	case <-ctx.Done():
@@ -242,7 +258,7 @@ func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
 	}
 
 	// 如果房间已经有游戏，返回游戏已开始
-	if room.Game != nil {
+	if r.Game != nil {
 		return ErrGameAlreadyStarted
 	}
 
@@ -254,10 +270,10 @@ func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
 	if err != nil {
 		return err
 	}
-	room.Game = g
+	r.Game = g
 
 	// 获取房间内用户信息
-	users, err := s.userService.GetUsersByIDs(ctx, room.Users...)
+	users, err := s.userService.GetUsersByIDs(ctx, r.Users...)
 	if err != nil {
 		return err
 	}
@@ -267,9 +283,9 @@ func (s *Service) RoomStartGame(ctx context.Context, room *Room) error {
 	return nil
 }
 
-func (s *Service) RoomStopGame(ctx context.Context, room *Room) error {
-	room.mu.Lock()
-	defer room.mu.Unlock()
+func (s *Service) RoomStopGame(ctx context.Context, r *Room) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	select {
 	case <-ctx.Done():
@@ -278,18 +294,18 @@ func (s *Service) RoomStopGame(ctx context.Context, room *Room) error {
 	}
 
 	// 如果房间没有游戏，返回游戏未开始
-	if room.Game == nil {
+	if r.Game == nil {
 		return ErrGameNotStarted
 	}
 
 	// 删除游戏
-	if err := s.gameService.RemoveGame(ctx, room.Game); err != nil {
+	if err := s.gameService.RemoveGame(ctx, r.Game); err != nil {
 		return err
 	}
 
 	// 停止游戏
-	room.Game.Stop()
-	room.Game = nil
+	r.Game.Stop()
+	r.Game = nil
 
 	return nil
 }

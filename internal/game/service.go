@@ -6,17 +6,8 @@ import (
 	"sync"
 
 	"github.com/emibotz/chat-server/internal/user"
-	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
 	"github.com/google/uuid"
 )
-
-type Broadcaster interface {
-	Broadcast(ctx context.Context, tick *pbuf.ServerTick, users ...uuid.UUID)
-}
-
-type NilBroadcaster struct{}
-
-func (b *NilBroadcaster) Broadcast(ctx context.Context, tick *pbuf.ServerTick, users ...uuid.UUID) {}
 
 type Service struct {
 	mu sync.RWMutex
@@ -105,7 +96,6 @@ func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*us
 	return nil
 }
 
-// [FIXME] 这代码可能风险有点大……
 func (s *Service) RemoveGame(ctx context.Context, game *Game) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -118,18 +108,19 @@ func (s *Service) RemoveGame(ctx context.Context, game *Game) error {
 
 	// 将游戏从列表中删除
 	i := slices.Index(s.games, game)
-
 	s.games = slices.Delete(s.games, i, i+1)
 
 	// 删除游戏和其中每个玩家对应的用户 ID 之间的键值连接
-	return game.WithPlayersByUserID(ctx, func(playersByUserID map[uuid.UUID]*Player) error {
+	players, err := game.PopPlayers(ctx)
+	if err != nil {
+		return err
+	}
 
-		for userID, _ := range playersByUserID {
-			delete(s.gamesByUserID, userID)
-		}
+	for _, player := range players {
+		delete(s.gamesByUserID, player.GetUserID())
+	}
 
-		return nil
-	})
+	return nil
 }
 
 func (s *Service) GetGameByUserID(ctx context.Context, userID uuid.UUID) (*Game, error) {
@@ -149,4 +140,39 @@ func (s *Service) GetGameByUserID(ctx context.Context, userID uuid.UUID) (*Game,
 	}
 
 	return game, nil
+}
+
+func (s *Service) UserJoinGame(ctx context.Context, g *Game, u *user.User) error {
+
+	// 使用用户的 ID 和名称创建玩家
+	p, err := NewPlayer(u.ID, u.Name)
+	if err != nil {
+		return err
+	}
+
+	// 使玩家加入游戏
+	if err := g.AddPlayer(ctx, p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// [FIXME]
+// THIS SEEMS LIKE A BAD WAY OF DOING THIS.
+// SHOULD WE LOCK THE GAME OUTSIDE?
+func (s *Service) UserLeaveGame(ctx context.Context, g *Game, u *user.User) error {
+
+	// 通过用户 ID 获取游戏内的指定玩家
+	p, err := g.GetPlayerByUserID(ctx, u.ID)
+	if err != nil {
+		return err
+	}
+
+	// 使玩家退出游戏
+	if err := g.RemovePlayer(ctx, p); err != nil {
+		return err
+	}
+
+	return nil
 }
