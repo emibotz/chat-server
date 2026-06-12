@@ -45,14 +45,30 @@ const (
 func main() {
 
 	// 所有用户可读可写，不可执行
+	dirPerm := OwnerRead | OwnerWrite | OwnerExec | GroupRead | GroupWrite | GroupExec | OtherRead | OtherWrite | OtherExec
 	filePerm := OwnerRead | OwnerWrite | GroupRead | GroupWrite | OtherRead | OtherWrite
 
 	// 创建日志文件
-	logFile, err := os.OpenFile("log.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.FileMode(filePerm))
+	today := time.Now().Format(time.DateOnly)
+	logFileDir := "./logs"
+	logFileName := fmt.Sprintf("%s/%s.log", logFileDir, today)
+	latestLogFileName := fmt.Sprintf("%s/%s", logFileDir, "latest.log")
+
+	if err := os.Mkdir(logFileDir, os.FileMode(dirPerm)); err != nil {
+		panic(err)
+	}
+
+	debugLogFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.FileMode(filePerm))
 	if err != nil {
 		panic(err)
 	}
-	defer logFile.Close()
+	defer debugLogFile.Close()
+
+	latestLogFile, err := os.OpenFile(latestLogFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.FileMode(filePerm))
+	if err != nil {
+		panic(err)
+	}
+	defer latestLogFile.Close()
 
 	// 创建控制台日志处理器
 	consoleHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -61,13 +77,18 @@ func main() {
 	})
 
 	// 创建日志文件处理器
-	jsonHandler := slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+	debugJSONHandler := slog.NewJSONHandler(debugLogFile, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	})
+
+	latestJSONHandler := slog.NewJSONHandler(latestLogFile, &slog.HandlerOptions{
 		AddSource: true,
 		Level:     slog.LevelDebug,
 	})
 
 	// 组合为多处理器
-	multiHandler := logging.NewMultiHandler(consoleHandler, jsonHandler)
+	multiHandler := logging.NewMultiHandler(consoleHandler, debugJSONHandler, latestJSONHandler)
 
 	// 创建日志器，并设置为默认结构化日志器
 	logger := slog.New(multiHandler)
