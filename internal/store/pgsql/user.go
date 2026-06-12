@@ -17,7 +17,7 @@ type users struct {
 }
 
 // 创建用户
-func (s *users) Create(ctx context.Context, user *user.User) error {
+func (s *users) Create(ctx context.Context, u *user.User) error {
 	// 查询语句
 	pgsql := `
 INSERT INTO
@@ -25,16 +25,25 @@ INSERT INTO
 	(name, auth)
 VALUES
 	($1, $2)
+ON CONFLICT
+	(name)
+	DO NOTHING
 RETURNING
 	id
 ;
 	`
 
 	// 创建并返回用户的实际 ID
-	row := s.pool.QueryRow(ctx, pgsql, user.Name, user.Auth)
+	row := s.pool.QueryRow(ctx, pgsql, u.Name, u.Auth)
 
 	// 将数据库自动生成的 ID 存回用户实例中
-	if err := row.Scan(&user.ID); err != nil {
+	if err := row.Scan(&u.ID); err != nil {
+
+		// 如果数据库返回重复错误，返回重复错误
+		if errors.Is(err, sql.ErrNoRows) {
+			return user.ErrUserDuplicated
+		}
+
 		return fmt.Errorf("pgsql user create failed: %w", err)
 	}
 

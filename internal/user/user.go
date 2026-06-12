@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrUserAlreadyExist = fmt.Errorf("user already exist.")
+	ErrUserDuplicated = fmt.Errorf("duplicated user.")
 )
 
 type User struct {
