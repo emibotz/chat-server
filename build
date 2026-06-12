@@ -1,4 +1,0 @@
-#!/bin/sh
-
-go build -o main -ldflags "-s -w" cmd/main.go
-
