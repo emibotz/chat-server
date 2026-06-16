@@ -88,6 +88,11 @@ WHERE
 // 通过多个用户 ID 查询对应用户，返回数量可能和传入数量不相同。
 // [FIXME] 可能需要额外的错误处理！
 func (s *users) GetsByIDs(ctx context.Context, ids ...uuid.UUID) ([]*user.User, error) {
+
+	if len(ids) < 1 {
+		return nil, nil
+	}
+
 	// 带占位符的查询语句
 	pgsql := `
 SELECT

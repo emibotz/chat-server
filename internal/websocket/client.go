@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	pbuf "github.com/emibotz/chat-server/pkg/buf.gen/proto"
+	"github.com/emibotz/chat-server/pkg/network"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
@@ -28,7 +29,7 @@ func (c *Client) send(bytes []byte) error {
 }
 
 func (c *Client) SendEvent(event *pbuf.ServerEvent) error {
-	event.Version = &APIVersion
+	event.Version = &network.APIVersion
 
 	bytes, err := proto.Marshal(event)
 	if err != nil {

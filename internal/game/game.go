@@ -44,6 +44,10 @@ func New(ctx context.Context, stop context.CancelFunc) (*Game, error) {
 	}, nil
 }
 
+func (g *Game) GetGameContext() context.Context {
+	return g.ctx
+}
+
 func (g *Game) Stop() {
 	g.stop()
 }

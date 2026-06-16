@@ -20,6 +20,7 @@ import (
 	"github.com/emibotz/chat-server/internal/user"
 	"github.com/emibotz/chat-server/internal/websocket"
 	"github.com/emibotz/chat-server/pkg/logging"
+	"github.com/emibotz/chat-server/pkg/network"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
@@ -199,6 +200,7 @@ func main() {
 
 	// 启动服务器，优雅退出
 	slog.Info("Server is on.",
+		slog.String("api_version", network.APIVersion),
 		slog.String("listening", serverAddr),
 	)
 	go func() {

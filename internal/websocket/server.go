@@ -18,8 +18,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var APIVersion = "dev_0.0.1"
-
 // WebSocket 服务器
 type Server struct {
 	mu sync.RWMutex

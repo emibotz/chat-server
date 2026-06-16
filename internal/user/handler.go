@@ -79,7 +79,7 @@ func (h *handler) HandleClose(c *network.ClientCloseContext) {
 func (h *handler) Register(c *echo.Context) error {
 	var req registerRequest
 	if err := c.Bind(&req); err != nil {
-		return response.BadRequest(c)
+		return response.HTTPFail(c, http.StatusBadRequest, -1, err)
 	}
 
 	ctx := c.Request().Context()

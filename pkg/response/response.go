@@ -10,8 +10,8 @@ import (
 // 这个包是为 HTTP 请求准备的
 
 type HTTPResponse struct {
-	Code    int32  `json:"code" form:"code"`
-	Message string `json:"message" form:"message"`
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
 	Data    any    `json:"data"`
 }
 

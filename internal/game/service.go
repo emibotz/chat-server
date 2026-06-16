@@ -86,7 +86,7 @@ func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*us
 
 	// 创建游戏时钟
 	// [FIXME] 硬编码每秒游戏刻数量
-	clock := NewClock(ctx, 60, game)
+	clock := NewClock(game.GetGameContext(), 60, game)
 
 	// 装配中间件
 	for _, factory := range s.middlewareFactories {
