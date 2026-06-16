@@ -25,6 +25,9 @@ type RoomInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Num           *int64                 `protobuf:"varint,1,opt,name=num" json:"num,omitempty"`
 	Name          *string                `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Owner         *string                `protobuf:"bytes,3,opt,name=owner" json:"owner,omitempty"`
+	UserCount     *int32                 `protobuf:"varint,4,opt,name=user_count,json=userCount" json:"user_count,omitempty"`
+	MaxUserCount  *int32                 `protobuf:"varint,5,opt,name=max_user_count,json=maxUserCount" json:"max_user_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,6 +74,27 @@ func (x *RoomInfo) GetName() string {
 		return *x.Name
 	}
 	return ""
+}
+
+func (x *RoomInfo) GetOwner() string {
+	if x != nil && x.Owner != nil {
+		return *x.Owner
+	}
+	return ""
+}
+
+func (x *RoomInfo) GetUserCount() int32 {
+	if x != nil && x.UserCount != nil {
+		return *x.UserCount
+	}
+	return 0
+}
+
+func (x *RoomInfo) GetMaxUserCount() int32 {
+	if x != nil && x.MaxUserCount != nil {
+		return *x.MaxUserCount
+	}
+	return 0
 }
 
 type RoomInfos struct {
@@ -385,10 +409,14 @@ var File_chat_server_v1_room_events_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_room_events_proto_rawDesc = "" +
 	"\n" +
-	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\x1a chat/server/v1/server_user.proto\"0\n" +
+	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\x1a chat/server/v1/server_user.proto\"\x8b\x01\n" +
 	"\bRoomInfo\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x03R\x03num\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\";\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05owner\x18\x03 \x01(\tR\x05owner\x12\x1d\n" +
+	"\n" +
+	"user_count\x18\x04 \x01(\x05R\tuserCount\x12$\n" +
+	"\x0emax_user_count\x18\x05 \x01(\x05R\fmaxUserCount\";\n" +
 	"\tRoomInfos\x12.\n" +
 	"\x05rooms\x18\x01 \x03(\v2\x18.chat.server.v1.RoomInfoR\x05rooms\"\x9e\x01\n" +
 	"\n" +

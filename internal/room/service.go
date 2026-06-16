@@ -278,11 +278,20 @@ func (s *Service) RoomStartGame(ctx context.Context, r *Room) error {
 	r.Game = g
 
 	// 获取房间内用户信息
-	users, err := s.userService.GetUsersByIDs(ctx, r.Users...)
+	usersByIDs, err := s.userService.GetUsersByIDs(ctx, r.Users...)
 	if err != nil {
 		return err
 	}
 
+	// 构建用户列表
+	users := make([]*user.User, 0, len(usersByIDs))
+	for _, u := range usersByIDs {
+		if u != nil {
+			users = append(users, u)
+		}
+	}
+
+	// 使用用户列表创建游戏。
 	s.gameService.AddGameWithUsers(ctx, g, users...)
 
 	return nil

@@ -11,6 +11,7 @@ import (
 	"github.com/emibotz/chat-server/pkg/key"
 	"github.com/emibotz/chat-server/pkg/logging"
 	"github.com/emibotz/chat-server/pkg/network"
+	"github.com/google/uuid"
 )
 
 type handler struct {
@@ -96,6 +97,18 @@ func (h *handler) getRooms(c *network.ClientRequestContext) error {
 		return errcode.SendError(c, errcode.InternalError)
 	}
 
+	// 查询每个房间的房主名字
+	ownerIDs := make([]uuid.UUID, len(rooms))
+	for i, r := range rooms {
+		ownerIDs[i] = r.Owner
+	}
+
+	ownersByIDs, err := h.userService.GetUsersByIDs(c, ownerIDs...)
+	if err != nil {
+		logging.Error("get users by ids failed", err)
+		return errcode.SendInternalError(c)
+	}
+
 	// 构建回复
 	event := &pbuf.ServerEvent{
 		Data: &pbuf.ServerEvent_Rooms{
@@ -107,9 +120,21 @@ func (h *handler) getRooms(c *network.ClientRequestContext) error {
 	roomInfos := event.GetRooms()
 
 	for _, r := range rooms {
+
+		owner, ok := ownersByIDs[r.Owner]
+		if !ok || owner == nil {
+			logging.Error("failed to get owner by id. this should not happen!", nil)
+		}
+
+		userCount := int32(len(r.Users))
+		maxUserCount := int32(0)
+
 		roomInfo := pbuf.RoomInfo{
-			Num:  &r.Num,
-			Name: &r.Name,
+			Num:          &r.Num,
+			Name:         &r.Name,
+			Owner:        &owner.Name,
+			UserCount:    &userCount,
+			MaxUserCount: &maxUserCount,
 		}
 
 		roomInfos.Rooms = append(roomInfos.Rooms, &roomInfo)

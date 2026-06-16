@@ -165,7 +165,33 @@ func (s *Service) GetUserByID(ctx context.Context, userID uuid.UUID) (*User, err
 	return s.users.GetByID(ctx, userID)
 }
 
-// [TODO] 是否需要处理结果？
-func (s *Service) GetUsersByIDs(ctx context.Context, userIDs ...uuid.UUID) ([]*User, error) {
-	return s.users.GetsByIDs(ctx, userIDs...)
+// 返回用户 ID 和用户记录的对应表，当没有查询到指定
+// 用户时，表中对应值为 nil ，需要自行处理。
+// 时间复杂度 O(n) 的实现。
+func (s *Service) GetUsersByIDs(ctx context.Context, userIDs ...uuid.UUID) (map[uuid.UUID]*User, error) {
+
+	// 查询用户
+	users, err := s.users.GetsByIDs(ctx, userIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建表，预分配容量
+	result := make(map[uuid.UUID]*User, len(userIDs))
+
+	// 遍历用户，填入表中
+	for _, u := range users {
+		result[u.ID] = u
+	}
+
+	// 遍历传入的 ID 列表，如果 ID 不在表中，将对应值设置为 nil
+	for _, userID := range userIDs {
+		if _, ok := result[userID]; !ok {
+			result[userID] = nil
+		}
+	}
+
+	// 返回
+	return result, nil
+
 }
