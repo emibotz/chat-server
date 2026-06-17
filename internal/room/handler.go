@@ -37,8 +37,11 @@ func (h *handler) createRoom(c *network.ClientRequestContext) error {
 		return errcode.SendUnauthorized(c)
 	}
 
+	// 获取房间名
+	roomName := c.Request.GetCreateRoom().GetName()
+
 	// 创建房间
-	r, err := h.roomService.CreateRoom(c, u)
+	r, err := h.roomService.CreateRoom(c, u, roomName)
 	if err != nil {
 
 		// 如果用户已在房间内，返回用户已在房间内

@@ -49,7 +49,7 @@ func TestRoomGameFlow(t *testing.T) {
 	failIfErr(t, err)
 
 	// 创建房间
-	room, err := roomService.CreateRoom(ctx, user1)
+	room, err := roomService.CreateRoom(ctx, user1, "")
 	failIfErr(t, err)
 
 	// 加入房间

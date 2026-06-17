@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/emibotz/chat-server/internal/game"
@@ -50,7 +51,7 @@ func NewService(
 	}
 }
 
-func (s *Service) CreateRoom(ctx context.Context, creator *user.User) (*Room, error) {
+func (s *Service) CreateRoom(ctx context.Context, creator *user.User, roomName string) (*Room, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -75,7 +76,11 @@ func (s *Service) CreateRoom(ctx context.Context, creator *user.User) (*Room, er
 	}
 
 	// 创建房间并添加到房间表里
-	r := New(num, fmt.Sprintf("%s的房间", creator.Name), creator.ID)
+	if strings.Trim(roomName, " \n\r") == "" {
+		roomName = fmt.Sprintf("%s的房间", creator.Name)
+	}
+
+	r := New(num, roomName, creator.ID)
 
 	s.roomsByNum[num] = r
 	s.roomsByUserID[creator.ID] = r

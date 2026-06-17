@@ -23,6 +23,7 @@ const (
 
 type CreateRoom struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          *string                `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -55,6 +56,13 @@ func (x *CreateRoom) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateRoom.ProtoReflect.Descriptor instead.
 func (*CreateRoom) Descriptor() ([]byte, []int) {
 	return file_chat_client_v1_room_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CreateRoom) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
 }
 
 type GetRooms struct {
@@ -249,9 +257,10 @@ var File_chat_client_v1_room_proto protoreflect.FileDescriptor
 
 const file_chat_client_v1_room_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/client/v1/room.proto\x12\x0echat.client.v1\"\f\n" +
+	"\x19chat/client/v1/room.proto\x12\x0echat.client.v1\" \n" +
 	"\n" +
-	"CreateRoom\"\n" +
+	"CreateRoom\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"\n" +
 	"\n" +
 	"\bGetRooms\"\x1c\n" +
 	"\bJoinRoom\x12\x10\n" +
