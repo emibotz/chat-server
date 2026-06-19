@@ -42,16 +42,18 @@ func Broadcast(server network.Server) game.TickMiddlewareFactory {
 
 						// 获取玩家数据
 						id := player.GetID().String()
+						userID := player.GetUserID().String()
 						name := player.GetName()
 						x := player.GetPosition().X
 						y := player.GetPosition().Y
 
 						// 将玩家数据填充到服务器刻事件中
 						playerState := &pbuf.PlayerState{
-							Id:   &id,
-							Name: &name,
-							X:    &x,
-							Y:    &y,
+							Id:     &id,
+							UserId: &userID,
+							Name:   &name,
+							X:      &x,
+							Y:      &y,
 						}
 
 						serverTick.Players = append(serverTick.Players, playerState)

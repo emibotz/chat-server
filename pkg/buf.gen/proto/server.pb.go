@@ -25,8 +25,9 @@ type PlayerState struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            *string                `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	Name          *string                `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
-	X             *float64               `protobuf:"fixed64,3,opt,name=x" json:"x,omitempty"`
-	Y             *float64               `protobuf:"fixed64,4,opt,name=y" json:"y,omitempty"`
+	UserId        *string                `protobuf:"bytes,3,opt,name=user_id,json=userId" json:"user_id,omitempty"`
+	X             *float64               `protobuf:"fixed64,4,opt,name=x" json:"x,omitempty"`
+	Y             *float64               `protobuf:"fixed64,5,opt,name=y" json:"y,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,6 +72,13 @@ func (x *PlayerState) GetId() string {
 func (x *PlayerState) GetName() string {
 	if x != nil && x.Name != nil {
 		return *x.Name
+	}
+	return ""
+}
+
+func (x *PlayerState) GetUserId() string {
+	if x != nil && x.UserId != nil {
+		return *x.UserId
 	}
 	return ""
 }
@@ -197,12 +205,13 @@ var File_chat_game_v1_server_proto protoreflect.FileDescriptor
 
 const file_chat_game_v1_server_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/game/v1/server.proto\x12\fchat.game.v1\"M\n" +
+	"\x19chat/game/v1/server.proto\x12\fchat.game.v1\"f\n" +
 	"\vPlayerState\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\f\n" +
-	"\x01x\x18\x03 \x01(\x01R\x01x\x12\f\n" +
-	"\x01y\x18\x04 \x01(\x01R\x01y\"D\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\f\n" +
+	"\x01x\x18\x04 \x01(\x01R\x01x\x12\f\n" +
+	"\x01y\x18\x05 \x01(\x01R\x01y\"D\n" +
 	"\vChatMessage\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\tR\bsenderId\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"x\n" +
