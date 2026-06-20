@@ -97,6 +97,10 @@ func (c *Clock) handlePlayerMoveIntention(ctx *TickContext) error {
 
 	// 根据意图修改玩家的位置
 	for _, player := range players {
+		if player == nil {
+			continue
+		}
+
 		intention := intentions[player.GetID()]
 
 		direction := intention.Direction.Normalized()
