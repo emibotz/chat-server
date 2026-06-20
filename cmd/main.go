@@ -103,7 +103,7 @@ func main() {
 	// 读取环境变量
 	slog.Info("Load environment variables.")
 	if err := godotenv.Load(); err != nil {
-		panic(err)
+		slog.Info("no .env file found.")
 	}
 
 	// 加载认证配置
