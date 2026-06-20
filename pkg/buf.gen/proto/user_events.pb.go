@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: chat/server/v1/server_user.proto
+// source: chat/server/v1/user_events.proto
 
 package proto
 
@@ -31,7 +31,7 @@ type ServerUserInfo struct {
 
 func (x *ServerUserInfo) Reset() {
 	*x = ServerUserInfo{}
-	mi := &file_chat_server_v1_server_user_proto_msgTypes[0]
+	mi := &file_chat_server_v1_user_events_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +43,7 @@ func (x *ServerUserInfo) String() string {
 func (*ServerUserInfo) ProtoMessage() {}
 
 func (x *ServerUserInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_server_v1_server_user_proto_msgTypes[0]
+	mi := &file_chat_server_v1_user_events_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +56,7 @@ func (x *ServerUserInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerUserInfo.ProtoReflect.Descriptor instead.
 func (*ServerUserInfo) Descriptor() ([]byte, []int) {
-	return file_chat_server_v1_server_user_proto_rawDescGZIP(), []int{0}
+	return file_chat_server_v1_user_events_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ServerUserInfo) GetId() string {
@@ -73,33 +73,33 @@ func (x *ServerUserInfo) GetName() string {
 	return ""
 }
 
-var File_chat_server_v1_server_user_proto protoreflect.FileDescriptor
+var File_chat_server_v1_user_events_proto protoreflect.FileDescriptor
 
-const file_chat_server_v1_server_user_proto_rawDesc = "" +
+const file_chat_server_v1_user_events_proto_rawDesc = "" +
 	"\n" +
-	" chat/server/v1/server_user.proto\x12\x0echat.server.v1\"4\n" +
+	" chat/server/v1/user_events.proto\x12\x0echat.server.v1\"4\n" +
 	"\x0eServerUserInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04nameB\x88\x01\n" +
-	"\x12com.chat.server.v1B\x0fServerUserProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
+	"\x12com.chat.server.v1B\x0fUserEventsProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
 
 var (
-	file_chat_server_v1_server_user_proto_rawDescOnce sync.Once
-	file_chat_server_v1_server_user_proto_rawDescData []byte
+	file_chat_server_v1_user_events_proto_rawDescOnce sync.Once
+	file_chat_server_v1_user_events_proto_rawDescData []byte
 )
 
-func file_chat_server_v1_server_user_proto_rawDescGZIP() []byte {
-	file_chat_server_v1_server_user_proto_rawDescOnce.Do(func() {
-		file_chat_server_v1_server_user_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_chat_server_v1_server_user_proto_rawDesc), len(file_chat_server_v1_server_user_proto_rawDesc)))
+func file_chat_server_v1_user_events_proto_rawDescGZIP() []byte {
+	file_chat_server_v1_user_events_proto_rawDescOnce.Do(func() {
+		file_chat_server_v1_user_events_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_chat_server_v1_user_events_proto_rawDesc), len(file_chat_server_v1_user_events_proto_rawDesc)))
 	})
-	return file_chat_server_v1_server_user_proto_rawDescData
+	return file_chat_server_v1_user_events_proto_rawDescData
 }
 
-var file_chat_server_v1_server_user_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_chat_server_v1_server_user_proto_goTypes = []any{
+var file_chat_server_v1_user_events_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_chat_server_v1_user_events_proto_goTypes = []any{
 	(*ServerUserInfo)(nil), // 0: chat.server.v1.ServerUserInfo
 }
-var file_chat_server_v1_server_user_proto_depIdxs = []int32{
+var file_chat_server_v1_user_events_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -107,26 +107,26 @@ var file_chat_server_v1_server_user_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_chat_server_v1_server_user_proto_init() }
-func file_chat_server_v1_server_user_proto_init() {
-	if File_chat_server_v1_server_user_proto != nil {
+func init() { file_chat_server_v1_user_events_proto_init() }
+func file_chat_server_v1_user_events_proto_init() {
+	if File_chat_server_v1_user_events_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_server_v1_server_user_proto_rawDesc), len(file_chat_server_v1_server_user_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_server_v1_user_events_proto_rawDesc), len(file_chat_server_v1_user_events_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_chat_server_v1_server_user_proto_goTypes,
-		DependencyIndexes: file_chat_server_v1_server_user_proto_depIdxs,
-		MessageInfos:      file_chat_server_v1_server_user_proto_msgTypes,
+		GoTypes:           file_chat_server_v1_user_events_proto_goTypes,
+		DependencyIndexes: file_chat_server_v1_user_events_proto_depIdxs,
+		MessageInfos:      file_chat_server_v1_user_events_proto_msgTypes,
 	}.Build()
-	File_chat_server_v1_server_user_proto = out.File
-	file_chat_server_v1_server_user_proto_goTypes = nil
-	file_chat_server_v1_server_user_proto_depIdxs = nil
+	File_chat_server_v1_user_events_proto = out.File
+	file_chat_server_v1_user_events_proto_goTypes = nil
+	file_chat_server_v1_user_events_proto_depIdxs = nil
 }

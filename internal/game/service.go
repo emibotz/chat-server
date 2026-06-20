@@ -49,19 +49,22 @@ func (s *Service) addGame(game *Game, userIDs ...uuid.UUID) {
 
 }
 
-// 添加游戏，并且为即将加入游戏的用户们创建玩家
-func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*user.User) error {
+// 添加游戏，并且为即将加入游戏的用户们创建玩家，返回用户 ID 和玩家 ID 的对应表
+func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*user.User) (map[uuid.UUID]uuid.UUID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return nil, ctx.Err()
 	default:
 	}
 
 	// 用户 ID 列表，用来添加游戏
 	userIDs := make([]uuid.UUID, len(users))
+
+	// 用户 ID 和玩家 ID 的对应表，用来返回
+	result := make(map[uuid.UUID]uuid.UUID, len(users))
 
 	// 遍历每个用户
 	for i, user := range users {
@@ -69,16 +72,19 @@ func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*us
 		// 通过用户的 ID 和名称创建玩家
 		player, err := NewPlayer(user.ID, user.Name)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// 把玩家添加到游戏中
 		if err := game.AddPlayer(ctx, player); err != nil {
-			return err
+			return nil, err
 		}
 
 		// 把用户 ID 添加到列表中
 		userIDs[i] = user.ID
+
+		// 把用户 ID 和玩家 ID 的对应关系添加到表中
+		result[user.ID] = player.GetID()
 	}
 
 	// 添加游戏
@@ -93,7 +99,7 @@ func (s *Service) AddGameWithUsers(ctx context.Context, game *Game, users ...*us
 		clock.UseMiddleware(factory(game))
 	}
 
-	return nil
+	return result, nil
 }
 
 func (s *Service) RemoveGame(ctx context.Context, game *Game) error {
@@ -142,20 +148,20 @@ func (s *Service) GetGameByUserID(ctx context.Context, userID uuid.UUID) (*Game,
 	return game, nil
 }
 
-func (s *Service) UserJoinGame(ctx context.Context, g *Game, u *user.User) error {
+func (s *Service) UserJoinGame(ctx context.Context, g *Game, u *user.User) (uuid.UUID, error) {
 
 	// 使用用户的 ID 和名称创建玩家
 	p, err := NewPlayer(u.ID, u.Name)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
 	// 使玩家加入游戏
 	if err := g.AddPlayer(ctx, p); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	return nil
+	return p.GetID(), nil
 }
 
 // [FIXME]

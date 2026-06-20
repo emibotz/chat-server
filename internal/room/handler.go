@@ -176,8 +176,8 @@ func (h *handler) joinRoom(c *network.ClientRequestContext) error {
 	}
 
 	// 用户加入房间
-	if err := h.roomService.UserJoinRoom(c, room, user); err != nil {
-
+	playerID, err := h.roomService.UserJoinRoom(c, room, user)
+	if err != nil {
 		// 如果用户已在房间内，返回用户已在房间内
 		if errors.Is(err, ErrAlreadyInRoom) {
 			return errcode.SendError(c, errcode.UserAlreadyInRoom)
@@ -189,7 +189,10 @@ func (h *handler) joinRoom(c *network.ClientRequestContext) error {
 		}
 
 		// 返回服务器内部错误
-		logging.Error("user join room failed", err)
+		slog.Error(
+			"user join room failed",
+			slog.String("error", err.Error()),
+		)
 		return errcode.SendInternalError(c)
 	}
 
@@ -276,6 +279,27 @@ func (h *handler) joinRoom(c *network.ClientRequestContext) error {
 	// 发送房间加入成功
 	if err := c.Client.SendEvent(event); err != nil {
 		return fmt.Errorf("client send event failed: %w", err)
+	}
+
+	// 如果返回了玩家 ID 就发送游戏开始事件
+
+	if playerID == uuid.Nil {
+		return nil
+	}
+
+	// 创建游戏开始事件
+	pid := playerID.String()
+	gameStarted := &pbuf.ServerEvent{
+		Data: &pbuf.ServerEvent_RoomGameStarted{
+			RoomGameStarted: &pbuf.RoomGameStarted{
+				PlayerId: &pid,
+			},
+		},
+	}
+
+	// 发送游戏开始事件
+	if err := c.Client.SendEvent(gameStarted); err != nil {
+		return fmt.Errorf("client send game started failed: %w", err)
 	}
 
 	return nil
@@ -392,8 +416,8 @@ func (h *handler) startGame(c *network.ClientRequestContext) error {
 	}
 
 	// 开始游戏
-	if err := h.roomService.RoomStartGame(c, room); err != nil {
-
+	result, err := h.roomService.RoomStartGame(c, room)
+	if err != nil {
 		// 如果游戏已经开始，返回游戏已经开始
 		if errors.Is(err, ErrGameAlreadyStarted) {
 			return errcode.SendError(c, errcode.GameAlreadyStarted)
@@ -411,13 +435,6 @@ func (h *handler) startGame(c *network.ClientRequestContext) error {
 		return errcode.SendInternalError(c)
 	}
 
-	// 创建事件
-	roomGameStarted := &pbuf.ServerEvent{
-		Data: &pbuf.ServerEvent_RoomGameStarted{
-			RoomGameStarted: &pbuf.RoomGameStarted{},
-		},
-	}
-
 	// 遍历客户端
 	for _, client := range clients {
 
@@ -426,9 +443,18 @@ func (h *handler) startGame(c *network.ClientRequestContext) error {
 			continue
 		}
 
+		// 创建每个用户对应的游戏开始事件
+		id := result[client.GetUserID()].String()
+		roomGameStarted := &pbuf.ServerEvent{
+			Data: &pbuf.ServerEvent_RoomGameStarted{
+				RoomGameStarted: &pbuf.RoomGameStarted{
+					PlayerId: &id,
+				},
+			},
+		}
+
 		// 发送事件
 		if err := client.SendEvent(roomGameStarted); err != nil {
-
 			// 其他客户端发送失败不应该影响当前客户端连接处理
 			logging.Error("client send roomGameStarted failed", err)
 			continue

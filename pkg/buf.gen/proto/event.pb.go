@@ -227,7 +227,7 @@ var File_chat_server_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a\x19chat/game/v1/server.proto\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\"\xfc\x04\n" +
+	"\x1achat/server/v1/event.proto\x12\x0echat.server.v1\x1a\x19chat/game/v1/server.proto\x1a!chat/server/v1/error_events.proto\x1a chat/server/v1/room_events.proto\x1a chat/server/v1/user_events.proto\"\xfc\x04\n" +
 	"\vServerEvent\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x123\n" +
 	"\x05error\x18\x02 \x01(\v2\x1b.chat.server.v1.ServerErrorH\x00R\x05error\x121\n" +
@@ -296,6 +296,7 @@ func file_chat_server_v1_event_proto_init() {
 	file_chat_game_v1_server_proto_init()
 	file_chat_server_v1_error_events_proto_init()
 	file_chat_server_v1_room_events_proto_init()
+	file_chat_server_v1_user_events_proto_init()
 	file_chat_server_v1_event_proto_msgTypes[0].OneofWrappers = []any{
 		(*ServerEvent_Error)(nil),
 		(*ServerEvent_Rooms)(nil),

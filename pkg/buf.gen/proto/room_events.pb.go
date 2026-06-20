@@ -335,6 +335,7 @@ func (x *RoomUserLeft) GetUser() *ServerUserInfo {
 
 type RoomGameStarted struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlayerId      *string                `protobuf:"bytes,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -367,6 +368,13 @@ func (x *RoomGameStarted) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RoomGameStarted.ProtoReflect.Descriptor instead.
 func (*RoomGameStarted) Descriptor() ([]byte, []int) {
 	return file_chat_server_v1_room_events_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RoomGameStarted) GetPlayerId() string {
+	if x != nil && x.PlayerId != nil {
+		return *x.PlayerId
+	}
+	return ""
 }
 
 type RoomGameStopped struct {
@@ -409,7 +417,7 @@ var File_chat_server_v1_room_events_proto protoreflect.FileDescriptor
 
 const file_chat_server_v1_room_events_proto_rawDesc = "" +
 	"\n" +
-	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\x1a chat/server/v1/server_user.proto\"\x8b\x01\n" +
+	" chat/server/v1/room_events.proto\x12\x0echat.server.v1\x1a chat/server/v1/user_events.proto\"\x8b\x01\n" +
 	"\bRoomInfo\x12\x10\n" +
 	"\x03num\x18\x01 \x01(\x03R\x03num\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -430,8 +438,9 @@ const file_chat_server_v1_room_events_proto_rawDesc = "" +
 	"\x0eRoomUserJoined\x122\n" +
 	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\"B\n" +
 	"\fRoomUserLeft\x122\n" +
-	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\"\x11\n" +
-	"\x0fRoomGameStarted\"\x11\n" +
+	"\x04user\x18\x01 \x01(\v2\x1e.chat.server.v1.ServerUserInfoR\x04user\".\n" +
+	"\x0fRoomGameStarted\x12\x1b\n" +
+	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\"\x11\n" +
 	"\x0fRoomGameStoppedB\x88\x01\n" +
 	"\x12com.chat.server.v1B\x0fRoomEventsProtoP\x01Z\a./proto\xa2\x02\x03CSX\xaa\x02\x0eChat.Server.V1\xca\x02\x0eChat\\Server\\V1\xe2\x02\x1aChat\\Server\\V1\\GPBMetadata\xea\x02\x10Chat::Server::V1b\beditionsp\xe8\a"
 
@@ -477,7 +486,7 @@ func file_chat_server_v1_room_events_proto_init() {
 	if File_chat_server_v1_room_events_proto != nil {
 		return
 	}
-	file_chat_server_v1_server_user_proto_init()
+	file_chat_server_v1_user_events_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -145,13 +145,13 @@ func (s *Service) GetRoomByUserID(ctx context.Context, userID uuid.UUID) (*Room,
 	return r, nil
 }
 
-func (s *Service) UserJoinRoom(ctx context.Context, r *Room, u *user.User) error {
+func (s *Service) UserJoinRoom(ctx context.Context, r *Room, u *user.User) (uuid.UUID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return uuid.Nil, ctx.Err()
 	default:
 	}
 
@@ -159,7 +159,7 @@ func (s *Service) UserJoinRoom(ctx context.Context, r *Room, u *user.User) error
 	_, ok := s.roomsByUserID[u.ID]
 
 	if ok || slices.Contains(r.Users, u.ID) {
-		return ErrAlreadyInRoom
+		return uuid.Nil, ErrAlreadyInRoom
 	}
 
 	// 把玩家添加进房间中，并且建立联系
@@ -169,15 +169,16 @@ func (s *Service) UserJoinRoom(ctx context.Context, r *Room, u *user.User) error
 
 	// 如果房间中没有正在进行中的游戏，可以就此返回。
 	if r.Game == nil {
-		return nil
+		return uuid.Nil, nil
 	}
 
 	// 使用户加入进行中的游戏。
-	if err := s.gameService.UserJoinGame(ctx, r.Game, u); err != nil {
-		return err
+	playerID, err := s.gameService.UserJoinGame(ctx, r.Game, u)
+	if err != nil {
+		return uuid.Nil, err
 	}
 
-	return nil
+	return playerID, nil
 }
 
 // 删除房间的底层实现，没有加锁
@@ -257,19 +258,19 @@ func (s *Service) DeleteRoom(ctx context.Context, room *Room) error {
 	return nil
 }
 
-func (s *Service) RoomStartGame(ctx context.Context, r *Room) error {
+func (s *Service) RoomStartGame(ctx context.Context, r *Room) (map[uuid.UUID]uuid.UUID, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return nil, ctx.Err()
 	default:
 	}
 
 	// 如果房间已经有游戏，返回游戏已开始
 	if r.Game != nil {
-		return ErrGameAlreadyStarted
+		return nil, ErrGameAlreadyStarted
 	}
 
 	// 创建游戏根上下文
@@ -278,14 +279,14 @@ func (s *Service) RoomStartGame(ctx context.Context, r *Room) error {
 	// 创建游戏
 	g, err := game.New(gameContext, cancel)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	r.Game = g
 
 	// 获取房间内用户信息
 	usersByIDs, err := s.userService.GetUsersByIDs(ctx, r.Users...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 构建用户列表
@@ -297,9 +298,9 @@ func (s *Service) RoomStartGame(ctx context.Context, r *Room) error {
 	}
 
 	// 使用用户列表创建游戏。
-	s.gameService.AddGameWithUsers(ctx, g, users...)
+	result, err := s.gameService.AddGameWithUsers(ctx, g, users...)
 
-	return nil
+	return result, nil
 }
 
 func (s *Service) RoomStopGame(ctx context.Context, r *Room) error {
