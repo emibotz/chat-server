@@ -35,6 +35,10 @@ func (h *handler) move(c *network.ClientRequestContext) error {
 		return errcode.SendInternalError(c)
 	}
 
+	if game == nil {
+		return errcode.SendError(c, errcode.UserNotInGame)
+	}
+
 	// 通过用户 ID 从游戏中获取玩家
 	player, err := game.GetPlayerByUserID(c, user.ID)
 	if err != nil {
